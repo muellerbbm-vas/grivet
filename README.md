@@ -45,8 +45,12 @@ Content-Type: application/vnd.api+json
         "links": {
           "related": "http://example.com/articles"
         }
+      },
+      "people": {
+        "links": {
+          "related": "http://example.com/people"
+        }
       }
-      // … more relationships
     }
   }
 }
@@ -76,7 +80,6 @@ Content-Type: application/vnd.api+json
         }
       }
     }
-    // … more articles
   ],
   "included": [
     {
@@ -86,7 +89,6 @@ Content-Type: application/vnd.api+json
         "name": "example name"
       }
     }
-    // … more people
   ]
 }
 ```
