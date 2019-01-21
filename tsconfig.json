@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "out",
+    "outDir": "lib",
     "target": "es5",
     "module": "commonjs",
     "moduleResolution": "node",
@@ -19,5 +19,5 @@
     "alwaysStrict": true,
     "noUnusedLocals": true
   },
-  "exclude": ["out", "**/*.spec.ts"]
+  "exclude": ["lib", "**/*.spec.ts"],
 }
