@@ -19,5 +19,5 @@
     "alwaysStrict": true,
     "noUnusedLocals": true
   },
-  "exclude": ["lib", "**/*.spec.ts"],
+  "exclude": ["lib", "**/*.spec.ts"]
 }

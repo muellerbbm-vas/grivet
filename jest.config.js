@@ -1,13 +1,13 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  name: "grivet",
+  name: 'grivet',
   globals: {
-    "ts-jest": {
-      tsConfig: "tsconfig.spec.json"
+    'ts-jest': {
+      tsConfig: 'tsconfig.spec.json'
     }
   },
   coverageDirectory: 'coverage',
   collectCoverage: true,
-  coverageReporters: ['html', 'cobertura'],
+  coverageReporters: ['html', 'cobertura']
 };

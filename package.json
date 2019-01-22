@@ -1,46 +1,54 @@
 {
-    "name": "@muellerbbm-vas/grivet",
-    "description": "A JSON:API client library written in Typescript with emphasis on RESTful traversal of resources according to HATEOAS principles",
-    "homepage": "https://github.com/muellerbbm-vas/grivet",
-    "version": "0.0.1",
-    "author": {
-        "name": "Müller-BBM VibroAkustik Systeme GmbH",
-        "url": "http://www.muellerbbm-vas.com",
-        "email": "info.de@muellerbbm-vas.de"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git@github.com:muellerbbm-vas/grivet.git"
-    },
-    "license": "MIT",
-    "licenses": [
-        {
-            "type": "MIT",
-            "url": "https://github.com/muellerbbm-vas/grivet/blob/master/LICENSE"
-        }
-    ],
-    "keywords": ["JSON:API", "REST", "HATEOAS", "TypeScript", "HTTP"],
-    "bugs": {
-        "url": "https://github.com/muellerbbm-vas/grivet/issues"
-    },
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts",
-    "scripts": {
-        "prepare" : "npm run build",
-        "prepublishOnly" : "npm test",
-        "build": "npx tsc",
-        "watch": "npx tsc -watch",
-        "test": "npx jest test",
-        "lint": "npx tslint -p . -c tslint.json"
-    },
-    "devDependencies": {
-        "@types/jest": "23.3.13",
-        "@types/node": "10.12.18",
-        "jest": "23.6.0",
-        "ts-jest": "23.10.5",
-        "tslint": "5.12.1",
-        "typescript": "3.2.4"
-    },
-    "dependencies": {},
-    "files": ["lib/**/*"]
+  "name": "@muellerbbm-vas/grivet",
+  "description": "A JSON:API client library written in Typescript with emphasis on RESTful traversal of resources according to HATEOAS principles",
+  "homepage": "https://github.com/muellerbbm-vas/grivet",
+  "version": "0.0.1",
+  "author": {
+    "name": "Müller-BBM VibroAkustik Systeme GmbH",
+    "url": "http://www.muellerbbm-vas.com",
+    "email": "info.de@muellerbbm-vas.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:muellerbbm-vas/grivet.git"
+  },
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/muellerbbm-vas/grivet/blob/master/LICENSE"
+    }
+  ],
+  "keywords": [
+    "JSON:API",
+    "REST",
+    "HATEOAS",
+    "TypeScript",
+    "HTTP"
+  ],
+  "bugs": {
+    "url": "https://github.com/muellerbbm-vas/grivet/issues"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test",
+    "build": "npx tsc",
+    "watch": "npx tsc -watch",
+    "test": "npx jest test",
+    "lint": "npx tslint -p . -c tslint.json"
+  },
+  "devDependencies": {
+    "@types/jest": "23.3.13",
+    "@types/node": "10.12.18",
+    "jest": "23.6.0",
+    "ts-jest": "23.10.5",
+    "tslint": "5.12.1",
+    "typescript": "3.2.4"
+  },
+  "dependencies": {},
+  "files": [
+    "lib/**/*"
+  ]
 }
