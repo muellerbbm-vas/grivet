@@ -4,13 +4,13 @@ A [JSON:API](https://jsonapi.org) client library written in Typescript with emph
 
 ## Features
 
--   Transparent access to included resources (in compound documents) as well as linked resources (fetched from a server)
--   `Promise`-based access to resources allowing `async`/`await` style programming
--   Adaptable to various HTTP client implementations
--   Support for sparse fieldsets
--   Uses memoization to avoid repeated network requests
--   No dependencies (apart from `jest` for testing)
--   Implemented against the JSON:API 1.0 specification.
+- Transparent access to included resources (in compound documents) as well as linked resources (fetched from a server)
+- `Promise`-based access to resources allowing `async`/`await` style programming
+- Adaptable to various HTTP client implementations
+- Support for sparse fieldsets
+- Uses memoization to avoid repeated network requests
+- No dependencies (apart from `jest` for testing)
+- Implemented against the JSON:API 1.0 specification.
 
 ## Installation
 
@@ -21,10 +21,7 @@ A [JSON:API](https://jsonapi.org) client library written in Typescript with emph
 To give an idea of what using Grivet looks like, the code snippet below shows how to traverse from an API entry point to the author of a specific article:
 
 ```typescript
-const apiEntryPointDoc = await JsonApi.Document.fromURL(
-    new URL('http://example.com/api/'),
-    context
-);
+const apiEntryPointDoc = await JsonApi.Document.fromURL(new URL('http://example.com/api/'), context);
 const articles = await apiEntryPoint.resource.relatedResources['articles'];
 const author = await articles[0].relatedResource['author'];
 const name = author.attributes['name'];
@@ -114,8 +111,8 @@ The `relationships` property of a `Resource` contains all relationships as a map
 
 ```typescript
 for (const relationshipName in articleResource.relationships) {
-    const relationship = articleResource.relationships[relationshipName];
-    // … do something with relationship
+  const relationship = articleResource.relationships[relationshipName];
+  // … do something with relationship
 }
 ```
 
@@ -126,15 +123,11 @@ When constructing a document, you can optionally provide a mapping from resource
 
 ```typescript
 const sparseFields = {
-    articles: ['author'],
-    people: ['first-name', 'last-name'],
+  articles: ['author'],
+  people: ['first-name', 'last-name']
 };
 
-const articleDoc = await JsonApi.Document.fromURL(
-    new URL('http://example.com/articles/1'),
-    context,
-    sparseFields
-);
+const articleDoc = await JsonApi.Document.fromURL(new URL('http://example.com/articles/1'), context, sparseFields);
 const article = articleDoc.resource;
 const author = await article.relatedResource['author'];
 ```
@@ -147,9 +140,9 @@ See `test/tests.spec.ts` for more examples of how to use this library.
 
 ## TODO
 
--   [Sorting](https://jsonapi.org/format/#fetching-sorting)
--   [Pagination](https://jsonapi.org/format/#fetching-pagination)
--   [Filtering](https://jsonapi.org/format/#fetching-filtering)
+- [Sorting](https://jsonapi.org/format/#fetching-sorting)
+- [Pagination](https://jsonapi.org/format/#fetching-pagination)
+- [Filtering](https://jsonapi.org/format/#fetching-filtering)
 
 ## License
 
