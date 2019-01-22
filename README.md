@@ -12,6 +12,10 @@ A [JSON:API](https://jsonapi.org) client library written in Typescript with emph
 -   No dependencies (apart from `jest` for testing)
 -   Implemented against the JSON:API 1.0 specification.
 
+## Installation
+
+    npm i @muellerbbm-vas/grivet
+
 ## Basic Usage
 
 To give an idea of what using Grivet looks like, the code snippet below shows how to traverse from an API entry point to the author of a specific article:
@@ -278,8 +282,6 @@ If the server also implements sparse fieldsets, the `article` resource will cont
 ### More examples
 
 See `test/tests.spec.ts` for more examples of how to use this library.
-
-## Installation
 
 ## TODO
 
