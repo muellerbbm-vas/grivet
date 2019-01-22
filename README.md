@@ -1,5 +1,7 @@
 # Grivet
 
+[![Build Status](https://travis-ci.org/muellerbbm-vas/grivet.svg?branch=master)](https://travis-ci.org/muellerbbm-vas/grivet)
+
 A [JSON:API](https://jsonapi.org) client library written in Typescript with emphasis on RESTful traversal of resources according to [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS) principles.
 
 ## Features
