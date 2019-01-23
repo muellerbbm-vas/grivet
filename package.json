@@ -46,7 +46,8 @@
     "commitLimit": false,
     "includeBranch": [
       "master"
-    ]
+    ],
+    "ignoreCommitPattern": "build:|ci:|docs:|refactor:|style:|test:"
   },
   "husky": {
     "hooks": {
