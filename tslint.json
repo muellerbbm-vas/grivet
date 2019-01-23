@@ -17,7 +17,7 @@
     "unified-signatures": true,
     "triple-equals": true,
     "strict-type-predicates": true,
-    "strict-boolean-expressions": true,
+    "strict-boolean-expressions": [true, "allow-undefined-union"],
     "return-undefined": true,
     "quotemark": false,
     "promise-function-async": true,
@@ -36,6 +36,14 @@
     "no-this-assignment": true,
     "no-trailing-whitespace": true,
     "no-irregular-whitespace": true,
+    "no-duplicate-super": true,
+    "no-duplicate-switch-case": true,
+    "no-duplicate-variable": true,
+    "no-return-await": true,
+    "no-shadowed-variable": true,
+    "no-unused-expression": true,
+    "no-floating-promises": true,
+    "no-invalid-this": true,
     "semicolon": true,
     "trailing-comma": true
   }
