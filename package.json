@@ -37,7 +37,17 @@
     "build": "npx tsc",
     "watch": "npx tsc -watch",
     "test": "npx jest test",
-    "lint": "npx tslint -p . -c tslint.json"
+    "lint": "npx tslint -p . -c tslint.json",
+    "version": "auto-changelog -p && git add CHANGELOG.md"
+  },
+  "auto-changelog": {
+    "template": "changelog-template.hbs",
+    "unreleased": true,
+    "commitLimit": false,
+    "includeBranch": [
+      "master"
+    ],
+    "ignoreCommitPattern": "build:|ci:|docs:|refactor:|style:|test:"
   },
   "husky": {
     "hooks": {
@@ -47,6 +57,7 @@
   "devDependencies": {
     "@types/jest": "23.3.13",
     "@types/node": "10.12.18",
+    "auto-changelog": "1.11.0",
     "husky": "1.3.1",
     "jest": "23.6.0",
     "prettier": "1.16.1",
