@@ -487,7 +487,7 @@ export namespace JsonApi {
 
     constructor(resourceType: string, id?: string) {
       this.rawData = { data: { type: resourceType } };
-      if (id) {
+      if (id !== undefined) {
         this.rawData.data.id = id;
       }
     }
