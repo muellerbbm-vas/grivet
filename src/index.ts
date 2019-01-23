@@ -483,7 +483,7 @@ export namespace JsonApi {
   }
 
   export class ClientDocument {
-    private rawData: Spec.ClientJsonApiDocument;
+    private readonly rawData: Spec.ClientJsonApiDocument;
 
     constructor(resourceType: string, id?: string) {
       this.rawData = { data: { type: resourceType } };
