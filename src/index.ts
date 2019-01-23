@@ -3,20 +3,23 @@ import { SchemaChecker, SchemaError } from './schemaChecker';
 import { memoized } from './memoized.decorator';
 export { Spec };
 
-function checkDocumentSchema(doc: { [k: string]: any }) {
+function checkDocumentSchema(doc: Spec.JsonApiDocument) {
   SchemaChecker.fromData(doc, 'Document')
     .singleObject()
     .atLeastOneOf(['data', 'errors', 'meta'])
     .allowedMembers(['data', 'errors', 'meta', 'jsonapi', 'links', 'included']);
   if ('data' in doc) {
-    const res: object[] = Array.isArray(doc['data']) ? doc['data'] : [doc['data']];
-    for (const r of res) {
-      checkResourceObjectSchema(r);
+    if (Array.isArray(doc['data'])) {
+      for (const r of doc['data'] as object[]) {
+        checkResourceObjectSchema(r);
+      }
+    } else if (doc['data'] !== undefined) {
+      checkResourceObjectSchema(doc['data']);
     }
   }
 }
 
-function checkResourceObjectSchema(res: object) {
+function checkResourceObjectSchema(res: object | null) {
   if (res === null) {
     return;
   }
@@ -121,6 +124,7 @@ export namespace JsonApi {
     @memoized()
     get includedResources(): IncludedResourcesMap {
       const res: IncludedResourcesMap = {};
+      // tslint:disable-next-line:strict-boolean-expressions
       for (const includedResource of this.rawData.included || []) {
         if (!(includedResource.type in res)) {
           res[includedResource.type] = {};
@@ -146,9 +150,8 @@ export namespace JsonApi {
   export class RelatedResourceAccessor<T extends RelationshipToResource> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
     async get(target: T, relationshipName: string, receiver: any): Promise<Resource | null | undefined> {
-      const rel = this.parent.relationships[relationshipName];
-      if (rel !== undefined) {
-        return rel.resource();
+      if (relationshipName in this.parent.relationships) {
+        return this.parent.relationships[relationshipName].resource();
       }
     }
   }
@@ -156,9 +159,8 @@ export namespace JsonApi {
   export class RelatedResourcesAccessor<T extends RelationshipToResources> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
     async get(target: T, relationshipName: string, receiver: any): Promise<Resource[]> {
-      const rel = this.parent.relationships[relationshipName];
-      if (rel !== undefined) {
-        return rel.resources();
+      if (relationshipName in this.parent.relationships) {
+        return this.parent.relationships[relationshipName].resources();
       }
       return [];
     }
@@ -167,9 +169,8 @@ export namespace JsonApi {
   export class RelatedDocumentAccessor<T extends RelationshipToDocument> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
     async get(target: T, relationshipName: string, receiver: any): Promise<Document | undefined> {
-      const rel = this.parent.relationships[relationshipName];
-      if (rel !== undefined) {
-        return rel.relatedDocument();
+      if (relationshipName in this.parent.relationships) {
+        return this.parent.relationships[relationshipName].relatedDocument();
       }
     }
   }
@@ -330,6 +331,7 @@ export namespace JsonApi {
       const primaryDataArray = this.document.hasManyResources
         ? <Spec.ResourceObject[]>this.document.rawData.data
         : [<Spec.ResourceObject>this.document.rawData.data];
+      // tslint:disable-next-line:strict-boolean-expressions
       const candidates = primaryDataArray.concat(this.document.rawData.included || []);
       const filtered = candidates.filter(
         resourceObject => resourceObject.type === this.type && resourceObject.id === this.id
@@ -483,11 +485,11 @@ export namespace JsonApi {
   }
 
   export class ClientDocument {
-    private rawData: Spec.ClientJsonApiDocument;
+    private readonly rawData: Spec.ClientJsonApiDocument;
 
     constructor(resourceType: string, id?: string) {
       this.rawData = { data: { type: resourceType } };
-      if (id) {
+      if (id !== undefined) {
         this.rawData.data.id = id;
       }
     }

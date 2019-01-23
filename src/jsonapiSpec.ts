@@ -8,6 +8,7 @@ import { XOR } from './typeHelpers';
  * https://jsonapi.org/format/#document-meta
  */
 export type MetaObject = {
+  links?: LinksObject,
   [propName: string]: any;
 };
 

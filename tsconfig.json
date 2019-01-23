@@ -15,9 +15,12 @@
     "lib": ["dom", "es2015", "es2016.array.include"],
     "esModuleInterop": true,
     "noImplicitAny": true,
+    "noImplicitThis": true,
     "strictNullChecks": true,
     "alwaysStrict": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true
   },
   "exclude": ["lib", "**/*.spec.ts"]
 }
