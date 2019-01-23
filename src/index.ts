@@ -19,7 +19,7 @@ function checkDocumentSchema(doc: Spec.JsonApiDocument) {
   }
 }
 
-function checkResourceObjectSchema(res: object) {
+function checkResourceObjectSchema(res: object | null) {
   if (res === null) {
     return;
   }
@@ -149,9 +149,8 @@ export namespace JsonApi {
   export class RelatedResourceAccessor<T extends RelationshipToResource> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
     async get(target: T, relationshipName: string, receiver: any): Promise<Resource | null | undefined> {
-      const rel = this.parent.relationships[relationshipName];
-      if (rel !== undefined) {
-        return rel.resource();
+      if (relationshipName in this.parent.relationships) {
+        return this.parent.relationships[relationshipName].resource();
       }
     }
   }
@@ -159,9 +158,8 @@ export namespace JsonApi {
   export class RelatedResourcesAccessor<T extends RelationshipToResources> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
     async get(target: T, relationshipName: string, receiver: any): Promise<Resource[]> {
-      const rel = this.parent.relationships[relationshipName];
-      if (rel !== undefined) {
-        return rel.resources();
+      if (relationshipName in this.parent.relationships) {
+        return this.parent.relationships[relationshipName].resources();
       }
       return [];
     }
@@ -170,9 +168,8 @@ export namespace JsonApi {
   export class RelatedDocumentAccessor<T extends RelationshipToDocument> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
     async get(target: T, relationshipName: string, receiver: any): Promise<Document | undefined> {
-      const rel = this.parent.relationships[relationshipName];
-      if (rel !== undefined) {
-        return rel.relatedDocument();
+      if (relationshipName in this.parent.relationships) {
+        return this.parent.relationships[relationshipName].relatedDocument();
       }
     }
   }
