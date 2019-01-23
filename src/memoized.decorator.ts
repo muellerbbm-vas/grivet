@@ -10,19 +10,19 @@ export function memoized() {
       descriptor.get = newFunction(descriptor.get, propName);
       return descriptor;
     }
-    if (descriptor.value) {
-      descriptor.value = newFunction(descriptor.value, propName);
+    if (descriptor.value && typeof descriptor.value === 'function') {
+      descriptor.value = newFunction(<() => any>descriptor.value, propName);
       return descriptor;
     }
     throw new TypeError('@memoized works only on getters and methods without arguments');
   };
 }
 
-function newFunction(original: () => any, propName: string) {
-  return function(...args: any[]) {
+function newFunction(original: () => any, propName: string): () => any {
+  return function (this: {[k: string]: any}, ...args: any[]): any {
     if (args.length > 0) {
       throw new TypeError('@memoized works only on methods without arguments');
     }
-    return this.hasOwnProperty(propName) ? this[propName] : (this[propName] = original.apply(this, args));
+    return this.hasOwnProperty(propName) ? this[propName] : (this[propName] = original.apply(this));
   };
 }

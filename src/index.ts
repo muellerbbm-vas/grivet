@@ -3,15 +3,18 @@ import { SchemaChecker, SchemaError } from './schemaChecker';
 import { memoized } from './memoized.decorator';
 export { Spec };
 
-function checkDocumentSchema(doc: { [k: string]: any }) {
+function checkDocumentSchema(doc: Spec.JsonApiDocument) {
   SchemaChecker.fromData(doc, 'Document')
     .singleObject()
     .atLeastOneOf(['data', 'errors', 'meta'])
     .allowedMembers(['data', 'errors', 'meta', 'jsonapi', 'links', 'included']);
   if ('data' in doc) {
-    const res: object[] = Array.isArray(doc['data']) ? doc['data'] : [doc['data']];
-    for (const r of res) {
-      checkResourceObjectSchema(r);
+    if (Array.isArray(doc['data'])) {
+      for (const r of doc['data'] as object[]) {
+        checkResourceObjectSchema(r);
+      }
+    } else if (doc['data'] !== undefined) {
+      checkResourceObjectSchema(doc['data']);
     }
   }
 }
