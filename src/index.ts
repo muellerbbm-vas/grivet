@@ -124,6 +124,7 @@ export namespace JsonApi {
     @memoized()
     get includedResources(): IncludedResourcesMap {
       const res: IncludedResourcesMap = {};
+      // tslint:disable-next-line:strict-boolean-expressions
       for (const includedResource of this.rawData.included || []) {
         if (!(includedResource.type in res)) {
           res[includedResource.type] = {};
@@ -330,6 +331,7 @@ export namespace JsonApi {
       const primaryDataArray = this.document.hasManyResources
         ? <Spec.ResourceObject[]>this.document.rawData.data
         : [<Spec.ResourceObject>this.document.rawData.data];
+      // tslint:disable-next-line:strict-boolean-expressions
       const candidates = primaryDataArray.concat(this.document.rawData.included || []);
       const filtered = candidates.filter(
         resourceObject => resourceObject.type === this.type && resourceObject.id === this.id
