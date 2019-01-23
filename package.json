@@ -41,7 +41,7 @@
     "version": "auto-changelog -p && git add CHANGELOG.md"
   },
   "auto-changelog": {
-    "template": "keepachangelog",
+    "template": "changelog-template.hbs",
     "unreleased": true,
     "commitLimit": false,
     "includeBranch": [
