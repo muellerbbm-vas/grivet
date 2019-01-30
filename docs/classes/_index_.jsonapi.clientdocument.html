@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html class="default no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>ClientDocument | Grivet Documentation</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../assets/css/main.css" />
+  </head>
+  <body>
+    <header>
+      <div class="tsd-page-toolbar">
+        <div class="container">
+          <div class="table-wrap">
+            <div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+              <div class="field">
+                <label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+                <input id="tsd-search-field" type="text" />
+              </div>
+              <ul class="results">
+                <li class="state loading">Preparing search index...</li>
+                <li class="state failure">The search index is not available</li>
+              </ul>
+              <a href="../index.html" class="title">Grivet Documentation</a>
+            </div>
+            <div class="table-cell" id="tsd-widgets">
+              <div id="tsd-filter">
+                <a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+                <div class="tsd-filter-group">
+                  <div class="tsd-select" id="tsd-filter-visibility">
+                    <span class="tsd-select-label">All</span>
+                    <ul class="tsd-select-list">
+                      <li data-value="public">Public</li>
+                      <li data-value="protected">Public/Protected</li>
+                      <li data-value="private" class="selected">All</li>
+                    </ul>
+                  </div>
+                  <input type="checkbox" id="tsd-filter-inherited" checked />
+                  <label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+                  <input type="checkbox" id="tsd-filter-externals" checked />
+                  <label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+                  <input type="checkbox" id="tsd-filter-only-exported" />
+                  <label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+                </div>
+              </div>
+              <a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tsd-page-title">
+        <div class="container">
+          <ul class="tsd-breadcrumb">
+            <li>
+              <a href="../globals.html">Globals</a>
+            </li>
+            <li>
+              <a href="../modules/_index_.html">&quot;index&quot;</a>
+            </li>
+            <li>
+              <a href="../modules/_index_.jsonapi.html">JsonApi</a>
+            </li>
+            <li>
+              <a href="_index_.jsonapi.clientdocument.html">ClientDocument</a>
+            </li>
+          </ul>
+          <h1>Class ClientDocument</h1>
+        </div>
+      </div>
+    </header>
+    <div class="container container-main">
+      <div class="row">
+        <div class="col-8 col-content">
+          <section class="tsd-panel tsd-hierarchy">
+            <h3>Hierarchy</h3>
+            <ul class="tsd-hierarchy">
+              <li>
+                <span class="target">ClientDocument</span>
+              </li>
+            </ul>
+          </section>
+          <section class="tsd-panel-group tsd-index-group">
+            <h2>Index</h2>
+            <section class="tsd-panel tsd-index-panel">
+              <div class="tsd-index-content">
+                <section class="tsd-index-section ">
+                  <h3>Constructors</h3>
+                  <ul class="tsd-index-list">
+                    <li class="tsd-kind-constructor tsd-parent-kind-class">
+                      <a href="_index_.jsonapi.clientdocument.html#constructor" class="tsd-kind-icon">constructor</a>
+                    </li>
+                  </ul>
+                </section>
+                <section class="tsd-index-section ">
+                  <h3>Accessors</h3>
+                  <ul class="tsd-index-list">
+                    <li class="tsd-kind-get-signature tsd-parent-kind-class">
+                      <a href="_index_.jsonapi.clientdocument.html#data" class="tsd-kind-icon">data</a>
+                    </li>
+                  </ul>
+                </section>
+                <section class="tsd-index-section ">
+                  <h3>Methods</h3>
+                  <ul class="tsd-index-list">
+                    <li class="tsd-kind-method tsd-parent-kind-class">
+                      <a href="_index_.jsonapi.clientdocument.html#includeresource" class="tsd-kind-icon"
+                        >include<wbr />Resource</a
+                      >
+                    </li>
+                    <li class="tsd-kind-method tsd-parent-kind-class">
+                      <a href="_index_.jsonapi.clientdocument.html#includeresources" class="tsd-kind-icon"
+                        >include<wbr />Resources</a
+                      >
+                    </li>
+                    <li class="tsd-kind-method tsd-parent-kind-class">
+                      <a href="_index_.jsonapi.clientdocument.html#setattribute" class="tsd-kind-icon"
+                        >set<wbr />Attribute</a
+                      >
+                    </li>
+                    <li class="tsd-kind-method tsd-parent-kind-class">
+                      <a href="_index_.jsonapi.clientdocument.html#setrelationship" class="tsd-kind-icon"
+                        >set<wbr />Relationship</a
+                      >
+                    </li>
+                  </ul>
+                </section>
+              </div>
+            </section>
+          </section>
+          <section class="tsd-panel-group tsd-member-group ">
+            <h2>Constructors</h2>
+            <section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class">
+              <a name="constructor" class="tsd-anchor"></a>
+              <h3>constructor</h3>
+              <ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
+                <li class="tsd-signature tsd-kind-icon">
+                  new <wbr />Client<wbr />Document<span class="tsd-signature-symbol">(</span>resourceType<span
+                    class="tsd-signature-symbol"
+                    >: </span
+                  ><span class="tsd-signature-type">string</span>, id<span class="tsd-signature-symbol">?: </span
+                  ><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span
+                  ><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span
+                  ><span class="tsd-signature-symbol">: </span
+                  ><a href="_index_.jsonapi.clientdocument.html" class="tsd-signature-type">ClientDocument</a>
+                </li>
+              </ul>
+              <ul class="tsd-descriptions">
+                <li class="tsd-description">
+                  <aside class="tsd-sources">
+                    <ul>
+                      <li>
+                        Defined in
+                        <a href="https://github.com/muellerbbm-vas/grivet/blob/f72fb06/src/index.ts#L488"
+                          >index.ts:488</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                  <h4 class="tsd-parameters-title">Parameters</h4>
+                  <ul class="tsd-parameters">
+                    <li>
+                      <h5>resourceType: <span class="tsd-signature-type">string</span></h5>
+                    </li>
+                    <li>
+                      <h5>
+                        <span class="tsd-flag ts-flagOptional">Optional</span> id:
+                        <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span
+                        ><span class="tsd-signature-type">string</span>
+                      </h5>
+                    </li>
+                  </ul>
+                  <h4 class="tsd-returns-title">
+                    Returns <a href="_index_.jsonapi.clientdocument.html" class="tsd-signature-type">ClientDocument</a>
+                  </h4>
+                </li>
+              </ul>
+            </section>
+          </section>
+          <section class="tsd-panel-group tsd-member-group ">
+            <h2>Accessors</h2>
+            <section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+              <a name="data" class="tsd-anchor"></a>
+              <h3>data</h3>
+              <ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+                <li class="tsd-signature tsd-kind-icon">
+                  <span class="tsd-signature-symbol">get</span> data<span class="tsd-signature-symbol">(</span
+                  ><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span
+                  ><span class="tsd-signature-type">Spec.ClientJsonApiDocument</span>
+                </li>
+              </ul>
+              <ul class="tsd-descriptions">
+                <li class="tsd-description">
+                  <aside class="tsd-sources">
+                    <ul>
+                      <li>
+                        Defined in
+                        <a href="https://github.com/muellerbbm-vas/grivet/blob/f72fb06/src/index.ts#L528"
+                          >index.ts:528</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                  <h4 class="tsd-returns-title">
+                    Returns <span class="tsd-signature-type">Spec.ClientJsonApiDocument</span>
+                  </h4>
+                </li>
+              </ul>
+            </section>
+          </section>
+          <section class="tsd-panel-group tsd-member-group ">
+            <h2>Methods</h2>
+            <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+              <a name="includeresource" class="tsd-anchor"></a>
+              <h3>include<wbr />Resource</h3>
+              <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+                <li class="tsd-signature tsd-kind-icon">
+                  include<wbr />Resource<span class="tsd-signature-symbol">(</span>resource<span
+                    class="tsd-signature-symbol"
+                    >: </span
+                  ><span class="tsd-signature-type">Spec.ResourceObject</span><span class="tsd-signature-symbol">)</span
+                  ><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span>
+                </li>
+              </ul>
+              <ul class="tsd-descriptions">
+                <li class="tsd-description">
+                  <aside class="tsd-sources">
+                    <ul>
+                      <li>
+                        Defined in
+                        <a href="https://github.com/muellerbbm-vas/grivet/blob/f72fb06/src/index.ts#L514"
+                          >index.ts:514</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                  <h4 class="tsd-parameters-title">Parameters</h4>
+                  <ul class="tsd-parameters">
+                    <li>
+                      <h5>resource: <span class="tsd-signature-type">Spec.ResourceObject</span></h5>
+                    </li>
+                  </ul>
+                  <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+                </li>
+              </ul>
+            </section>
+            <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+              <a name="includeresources" class="tsd-anchor"></a>
+              <h3>include<wbr />Resources</h3>
+              <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+                <li class="tsd-signature tsd-kind-icon">
+                  include<wbr />Resources<span class="tsd-signature-symbol">(</span>resources<span
+                    class="tsd-signature-symbol"
+                    >: </span
+                  ><span class="tsd-signature-type">Spec.ResourceObject</span
+                  ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span
+                  ><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span>
+                </li>
+              </ul>
+              <ul class="tsd-descriptions">
+                <li class="tsd-description">
+                  <aside class="tsd-sources">
+                    <ul>
+                      <li>
+                        Defined in
+                        <a href="https://github.com/muellerbbm-vas/grivet/blob/f72fb06/src/index.ts#L521"
+                          >index.ts:521</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                  <h4 class="tsd-parameters-title">Parameters</h4>
+                  <ul class="tsd-parameters">
+                    <li>
+                      <h5>
+                        resources: <span class="tsd-signature-type">Spec.ResourceObject</span
+                        ><span class="tsd-signature-symbol">[]</span>
+                      </h5>
+                    </li>
+                  </ul>
+                  <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+                </li>
+              </ul>
+            </section>
+            <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+              <a name="setattribute" class="tsd-anchor"></a>
+              <h3>set<wbr />Attribute</h3>
+              <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+                <li class="tsd-signature tsd-kind-icon">
+                  set<wbr />Attribute<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol"
+                    >: </span
+                  ><span class="tsd-signature-type">string</span>, value<span class="tsd-signature-symbol">: </span
+                  ><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span
+                  ><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span>
+                </li>
+              </ul>
+              <ul class="tsd-descriptions">
+                <li class="tsd-description">
+                  <aside class="tsd-sources">
+                    <ul>
+                      <li>
+                        Defined in
+                        <a href="https://github.com/muellerbbm-vas/grivet/blob/f72fb06/src/index.ts#L497"
+                          >index.ts:497</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                  <h4 class="tsd-parameters-title">Parameters</h4>
+                  <ul class="tsd-parameters">
+                    <li>
+                      <h5>name: <span class="tsd-signature-type">string</span></h5>
+                    </li>
+                    <li>
+                      <h5>value: <span class="tsd-signature-type">string</span></h5>
+                    </li>
+                  </ul>
+                  <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+                </li>
+              </ul>
+            </section>
+            <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+              <a name="setrelationship" class="tsd-anchor"></a>
+              <h3>set<wbr />Relationship</h3>
+              <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+                <li class="tsd-signature tsd-kind-icon">
+                  set<wbr />Relationship<span class="tsd-signature-symbol">(</span>name<span
+                    class="tsd-signature-symbol"
+                    >: </span
+                  ><span class="tsd-signature-type">string</span>, ressourceIdentifier<span class="tsd-signature-symbol"
+                    >: </span
+                  ><span class="tsd-signature-type">Spec.ResourceIdentifierObject</span
+                  ><span class="tsd-signature-symbol"> | </span
+                  ><span class="tsd-signature-type">Spec.ResourceIdentifierObject</span
+                  ><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span
+                  ><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span>
+                </li>
+              </ul>
+              <ul class="tsd-descriptions">
+                <li class="tsd-description">
+                  <aside class="tsd-sources">
+                    <ul>
+                      <li>
+                        Defined in
+                        <a href="https://github.com/muellerbbm-vas/grivet/blob/f72fb06/src/index.ts#L504"
+                          >index.ts:504</a
+                        >
+                      </li>
+                    </ul>
+                  </aside>
+                  <h4 class="tsd-parameters-title">Parameters</h4>
+                  <ul class="tsd-parameters">
+                    <li>
+                      <h5>name: <span class="tsd-signature-type">string</span></h5>
+                    </li>
+                    <li>
+                      <h5>
+                        ressourceIdentifier: <span class="tsd-signature-type">Spec.ResourceIdentifierObject</span
+                        ><span class="tsd-signature-symbol"> | </span
+                        ><span class="tsd-signature-type">Spec.ResourceIdentifierObject</span
+                        ><span class="tsd-signature-symbol">[]</span>
+                      </h5>
+                    </li>
+                  </ul>
+                  <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+                </li>
+              </ul>
+            </section>
+          </section>
+        </div>
+        <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+          <nav class="tsd-navigation primary">
+            <ul>
+              <li class="globals  ">
+                <a href="../globals.html"><em>Globals</em></a>
+              </li>
+            </ul>
+          </nav>
+          <nav class="tsd-navigation secondary menu-sticky">
+            <ul class="before-current">
+              <li class=" tsd-kind-class tsd-parent-kind-module">
+                <a href="_index_.jsonapi.cardinalityerror.html" class="tsd-kind-icon">Cardinality<wbr />Error</a>
+              </li>
+            </ul>
+            <ul class="current">
+              <li class="current tsd-kind-class tsd-parent-kind-module">
+                <a href="_index_.jsonapi.clientdocument.html" class="tsd-kind-icon">Client<wbr />Document</a>
+                <ul>
+                  <li class=" tsd-kind-constructor tsd-parent-kind-class">
+                    <a href="_index_.jsonapi.clientdocument.html#constructor" class="tsd-kind-icon">constructor</a>
+                  </li>
+                  <li class=" tsd-kind-get-signature tsd-parent-kind-class">
+                    <a href="_index_.jsonapi.clientdocument.html#data" class="tsd-kind-icon">data</a>
+                  </li>
+                  <li class=" tsd-kind-method tsd-parent-kind-class">
+                    <a href="_index_.jsonapi.clientdocument.html#includeresource" class="tsd-kind-icon"
+                      >include<wbr />Resource</a
+                    >
+                  </li>
+                  <li class=" tsd-kind-method tsd-parent-kind-class">
+                    <a href="_index_.jsonapi.clientdocument.html#includeresources" class="tsd-kind-icon"
+                      >include<wbr />Resources</a
+                    >
+                  </li>
+                  <li class=" tsd-kind-method tsd-parent-kind-class">
+                    <a href="_index_.jsonapi.clientdocument.html#setattribute" class="tsd-kind-icon"
+                      >set<wbr />Attribute</a
+                    >
+                  </li>
+                  <li class=" tsd-kind-method tsd-parent-kind-class">
+                    <a href="_index_.jsonapi.clientdocument.html#setrelationship" class="tsd-kind-icon"
+                      >set<wbr />Relationship</a
+                    >
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="after-current">
+              <li class=" tsd-kind-class tsd-parent-kind-module">
+                <a href="_index_.jsonapi.document.html" class="tsd-kind-icon">Document</a>
+              </li>
+              <li class=" tsd-kind-class tsd-parent-kind-module">
+                <a href="_index_.jsonapi.idmismatcherror.html" class="tsd-kind-icon">Id<wbr />Mismatch<wbr />Error</a>
+              </li>
+              <li class=" tsd-kind-class tsd-parent-kind-module">
+                <a href="_index_.jsonapi.link.html" class="tsd-kind-icon">Link</a>
+              </li>
+              <li class=" tsd-kind-class tsd-parent-kind-module">
+                <a href="_index_.jsonapi.mainresource.html" class="tsd-kind-icon">Main<wbr />Resource</a>
+              </li>
+              <li class=" tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
+                <a href="_index_.jsonapi.relateddocumentaccessor.html" class="tsd-kind-icon"
+                  >Related<wbr />Document<wbr />Accessor</a
+                >
+              </li>
+              <li class=" tsd-kind-class tsd-parent-kind-module">
+                <a href="_index_.jsonapi.relatedresource.html" class="tsd-kind-icon">Related<wbr />Resource</a>
+              </li>
+              <li class=" tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
+                <a href="_index_.jsonapi.relatedresourceaccessor.html" class="tsd-kind-icon"
+                  >Related<wbr />Resource<wbr />Accessor</a
+                >
+              </li>
+              <li class=" tsd-kind-class tsd-parent-kind-module tsd-has-type-parameter">
+                <a href="_index_.jsonapi.relatedresourcesaccessor.html" class="tsd-kind-icon"
+                  >Related<wbr />Resources<wbr />Accessor</a
+                >
+              </li>
+              <li class=" tsd-kind-class tsd-parent-kind-module">
+                <a href="_index_.jsonapi.relationship.html" class="tsd-kind-icon">Relationship</a>
+              </li>
+              <li class=" tsd-kind-class tsd-parent-kind-module">
+                <a href="_index_.jsonapi.resource.html" class="tsd-kind-icon">Resource</a>
+              </li>
+              <li class=" tsd-kind-interface tsd-parent-kind-module">
+                <a href="../interfaces/_index_.jsonapi.context.html" class="tsd-kind-icon">Context</a>
+              </li>
+              <li class=" tsd-kind-type-alias tsd-parent-kind-module">
+                <a href="../modules/_index_.jsonapi.html#fieldnames" class="tsd-kind-icon">Field<wbr />Names</a>
+              </li>
+              <li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+                <a href="../modules/_index_.jsonapi.html#includedresourcesmap" class="tsd-kind-icon"
+                  >Included<wbr />Resources<wbr />Map</a
+                >
+              </li>
+              <li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+                <a href="../modules/_index_.jsonapi.html#links" class="tsd-kind-icon">Links</a>
+              </li>
+              <li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+                <a href="../modules/_index_.jsonapi.html#relationshiptodocument" class="tsd-kind-icon"
+                  >Relationship<wbr />ToDocument</a
+                >
+              </li>
+              <li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+                <a href="../modules/_index_.jsonapi.html#relationshiptoresource" class="tsd-kind-icon"
+                  >Relationship<wbr />ToResource</a
+                >
+              </li>
+              <li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+                <a href="../modules/_index_.jsonapi.html#relationshiptoresources" class="tsd-kind-icon"
+                  >Relationship<wbr />ToResources</a
+                >
+              </li>
+              <li class=" tsd-kind-type-alias tsd-parent-kind-module tsd-is-not-exported">
+                <a href="../modules/_index_.jsonapi.html#relationships" class="tsd-kind-icon">Relationships</a>
+              </li>
+              <li class=" tsd-kind-type-alias tsd-parent-kind-module">
+                <a href="../modules/_index_.jsonapi.html#sparsefields" class="tsd-kind-icon">Sparse<wbr />Fields</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+    <footer class="with-border-bottom">
+      <div class="container">
+        <h2>Legend</h2>
+        <div class="tsd-legend-group">
+          <ul class="tsd-legend">
+            <li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+            <li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+            <li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+            <li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+            <li class="tsd-kind-function tsd-has-type-parameter">
+              <span class="tsd-kind-icon">Function with type parameter</span>
+            </li>
+            <li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+            <li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+          </ul>
+          <ul class="tsd-legend">
+            <li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+            <li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+            <li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+            <li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+          </ul>
+          <ul class="tsd-legend">
+            <li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+            <li class="tsd-kind-interface tsd-has-type-parameter">
+              <span class="tsd-kind-icon">Interface with type parameter</span>
+            </li>
+            <li class="tsd-kind-constructor tsd-parent-kind-interface">
+              <span class="tsd-kind-icon">Constructor</span>
+            </li>
+            <li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+            <li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+            <li class="tsd-kind-index-signature tsd-parent-kind-interface">
+              <span class="tsd-kind-icon">Index signature</span>
+            </li>
+          </ul>
+          <ul class="tsd-legend">
+            <li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+            <li class="tsd-kind-class tsd-has-type-parameter">
+              <span class="tsd-kind-icon">Class with type parameter</span>
+            </li>
+            <li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+            <li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+            <li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+            <li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+            <li class="tsd-kind-index-signature tsd-parent-kind-class">
+              <span class="tsd-kind-icon">Index signature</span>
+            </li>
+          </ul>
+          <ul class="tsd-legend">
+            <li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
+              <span class="tsd-kind-icon">Inherited constructor</span>
+            </li>
+            <li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+              <span class="tsd-kind-icon">Inherited property</span>
+            </li>
+            <li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+              <span class="tsd-kind-icon">Inherited method</span>
+            </li>
+            <li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited">
+              <span class="tsd-kind-icon">Inherited accessor</span>
+            </li>
+          </ul>
+          <ul class="tsd-legend">
+            <li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected">
+              <span class="tsd-kind-icon">Protected property</span>
+            </li>
+            <li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected">
+              <span class="tsd-kind-icon">Protected method</span>
+            </li>
+            <li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected">
+              <span class="tsd-kind-icon">Protected accessor</span>
+            </li>
+          </ul>
+          <ul class="tsd-legend">
+            <li class="tsd-kind-property tsd-parent-kind-class tsd-is-private">
+              <span class="tsd-kind-icon">Private property</span>
+            </li>
+            <li class="tsd-kind-method tsd-parent-kind-class tsd-is-private">
+              <span class="tsd-kind-icon">Private method</span>
+            </li>
+            <li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private">
+              <span class="tsd-kind-icon">Private accessor</span>
+            </li>
+          </ul>
+          <ul class="tsd-legend">
+            <li class="tsd-kind-property tsd-parent-kind-class tsd-is-static">
+              <span class="tsd-kind-icon">Static property</span>
+            </li>
+            <li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static">
+              <span class="tsd-kind-icon">Static method</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+    <div class="container tsd-generator">
+      <p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+    </div>
+    <div class="overlay"></div>
+    <script src="../assets/js/main.js"></script>
+    <script>
+      if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');
+    </script>
+  </body>
+</html>

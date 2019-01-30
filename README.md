@@ -30,7 +30,7 @@ const name = author.attributes['name'];
 ```
 
 In the first line, a JSON:API document is constructed from a given URL and a `Context` object
-([see the documentation on contexts](./doc/context.md) for more details). The `Promise` returned by the `fromURL` function is awaited to obtain the `Document` (corresponding to the [JSON:API top level document](https://jsonapi.org/format/#document-structure)). The raw JSON:API document fetched from the server might look something like this:
+([see the documentation on contexts](./docs/guides/context.md) for more details). The `Promise` returned by the `fromURL` function is awaited to obtain the `Document` (corresponding to the [JSON:API top level document](https://jsonapi.org/format/#document-structure)). The raw JSON:API document fetched from the server might look something like this:
 
 ```http
 GET http://example.com/api HTTP/1.1
@@ -102,8 +102,6 @@ We do not have to know whether the relationship links to an included resource or
 We just `await` the `relatedResource` property.
 
 The attributes of the _author_ resource can then simply be obtained using its `attributes` property.
-
-Next, we will see how to provide the `Context` object needed to construct a `Document`.
 
 ## Examples
 
