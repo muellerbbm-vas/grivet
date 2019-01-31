@@ -19,7 +19,7 @@ export function memoized() {
 }
 
 function newFunction(original: () => any, propName: string): () => any {
-  return function (this: {[k: string]: any}, ...args: any[]): any {
+  return function(this: { [k: string]: any }, ...args: any[]): any {
     if (args.length > 0) {
       throw new TypeError('@memoized works only on methods without arguments');
     }
