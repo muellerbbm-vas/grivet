@@ -19,7 +19,7 @@ An implementation based on the Angular http client could look like this:
 
 ```typescript
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { JsonApi, Spec } from '@vas/jsonapi-client';
+import { JsonApi, Spec } from '@muellerbbm-vas/grivet';
 
 export class AngularHttpContext implements JsonApi.Context {
   constructor(private readonly http: HttpClient, public readonly headers: HttpHeaders) {
@@ -37,7 +37,7 @@ In the above example, an Angular http client is used with its `Observable` conve
 ## Example Node http context using axios
 
 ```typescript
-import { JsonApi, Spec } from '@vas/jsonapi-client';
+import { JsonApi, Spec } from '@muellerbbm-vas/grivet';
 import axios, { AxiosRequestConfig, AxiosInstance } from 'Axios';
 
 export class NodeHttpContext implements JsonApi.Context {
@@ -67,6 +67,8 @@ export class NodeHttpContext implements JsonApi.Context {
 A `Context` implementation does not have to perform any HTTP requests. It can also just return responses from any other source, such as pre-defined responses for testing purposes. The following `Context` takes a `TestApi` object and just returns a resolved `Promise` filled with data taken from the `TestApi` object keyed by `pathname`:
 
 ```typescript
+import { JsonApi, Spec } from '@muellerbbm-vas/grivet';
+
 type TestApi = { [path: string]: Spec.JsonApiDocument };
 
 class TestContext implements JsonApi.Context {

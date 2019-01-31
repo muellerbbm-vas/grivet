@@ -23,6 +23,8 @@ A [JSON:API](https://jsonapi.org) client library written in Typescript with emph
 To give an idea of what using Grivet looks like, the code snippet below shows how to traverse from an API entry point to the author of a specific article:
 
 ```typescript
+import { JsonApi } from '@muellerbbm-vas/grivet';
+
 const apiEntryPointDoc = await JsonApi.Document.fromURL(new URL('http://example.com/api/'), context);
 const articles = await apiEntryPoint.resource.relatedResources['articles'];
 const author = await articles[0].relatedResource['author'];
@@ -102,6 +104,10 @@ We do not have to know whether the relationship links to an included resource or
 We just `await` the `relatedResource` property.
 
 The attributes of the _author_ resource can then simply be obtained using its `attributes` property.
+
+## Guides
+
+- [Implementing the `Context` interface](./docs/guides/context.md)
 
 ## Examples
 
