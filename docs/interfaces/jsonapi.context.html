@@ -74,108 +74,7 @@
 					<div class="lead">
 						<p>Implement this interface to define how Documents are fetched from <code>related</code> links</p>
 					</div>
-					<h1 id="implementing-the-context-interface">Implementing the <code>Context</code> interface</h1>
-					<p>A method to fetch resources that are not included in a document has to be provided by the user of Grivet by implementing the <code>Context</code> interface. This makes the library more easily adaptable to various frameworks and different HTTP client libraries. The <code>Context</code> interface looks like this:</p>
-					<pre><code class="language-typescript"><span class="hljs-comment">/**
- * Implement this interface to define how Documents are fetched from `related` links
- */</span>
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> Context {
-  getDocument(url: URL): <span class="hljs-built_in">Promise</span>&lt;Spec.JsonApiDocument&gt;;
-}</code></pre>
-					<p>Basically, a <code>Context</code> implementation just has to provide a <code>getDocument</code> method that returns a <code>Promise</code> of a <code>JsonApiDocument</code> when given a <code>URL</code>. Just one thing to keep in mind: As per the <a href="https://jsonapi.org/format/#content-negotiation-clients">specification</a>, a request to a JSON:API server has to include the <code>Accept</code> header with the value <code>application/vnd.api+json</code>.</p>
-					<h2 id="example-angular-http-context">Example Angular http context</h2>
-					<p>An implementation based on the Angular http client could look like this:</p>
-					<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { HttpClient, HttpHeaders } <span class="hljs-keyword">from</span> <span class="hljs-string">'@angular/common/http'</span>;
-<span class="hljs-keyword">import</span> { JsonApi, Spec } <span class="hljs-keyword">from</span> <span class="hljs-string">'@muellerbbm-vas/grivet'</span>;
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> AngularHttpContext <span class="hljs-keyword">implements</span> JsonApi.Context {
-  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> readonly http: HttpClient, <span class="hljs-keyword">public</span> readonly headers: HttpHeaders</span>) {
-    <span class="hljs-keyword">this</span>.headers = headers.set(<span class="hljs-string">'Accept'</span>, <span class="hljs-string">'application/vnd.api+json'</span>);
-  }
-
-  <span class="hljs-keyword">async</span> getDocument(url: URL): <span class="hljs-built_in">Promise</span>&lt;Spec.JsonApiDocument&gt; {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.http.get&lt;Spec.JsonApiDocument&gt;(url.href, { headers: <span class="hljs-keyword">this</span>.headers }).toPromise();
-  }
-}</code></pre>
-					<p>In the above example, an Angular http client is used with its <code>Observable</code> converted to a <code>Promise</code>. The <code>Accept</code> header is set in the constructor so that all subsequent requests use this value.</p>
-					<h2 id="example-node-http-context-using-axios">Example Node http context using axios</h2>
-					<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { JsonApi, Spec } <span class="hljs-keyword">from</span> <span class="hljs-string">'@muellerbbm-vas/grivet'</span>;
-<span class="hljs-keyword">import</span> axios, { AxiosRequestConfig, AxiosInstance } <span class="hljs-keyword">from</span> <span class="hljs-string">'Axios'</span>;
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> NodeHttpContext <span class="hljs-keyword">implements</span> JsonApi.Context {
-  headers: { [index: <span class="hljs-built_in">string</span>]: <span class="hljs-built_in">string</span> } = {
-    accept: <span class="hljs-string">'application/vnd.api+json'</span>
-  };
-  axios: AxiosInstance;
-
-  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"></span>) {
-    <span class="hljs-keyword">this</span>.axios = axios.create();
-  }
-
-  <span class="hljs-keyword">async</span> getDocument(url: URL): <span class="hljs-built_in">Promise</span>&lt;Spec.JsonApiDocument&gt; {
-    <span class="hljs-keyword">const</span> reqConfig: AxiosRequestConfig = {
-      url: url.href,
-      headers: <span class="hljs-keyword">this</span>.headers
-    };
-
-    <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-keyword">this</span>.axios.request(reqConfig);
-    <span class="hljs-keyword">return</span> res.data;
-  }
-}</code></pre>
-					<h2 id="example-context-for-testing">Example context for testing</h2>
-					<p>A <code>Context</code> implementation does not have to perform any HTTP requests. It can also just return responses from any other source, such as pre-defined responses for testing purposes. The following <code>Context</code> takes a <code>TestApi</code> object and just returns a resolved <code>Promise</code> filled with data taken from the <code>TestApi</code> object keyed by <code>pathname</code>:</p>
-					<pre><code class="language-typescript"><span class="hljs-keyword">import</span> { JsonApi, Spec } <span class="hljs-keyword">from</span> <span class="hljs-string">'@muellerbbm-vas/grivet'</span>;
-
-<span class="hljs-keyword">type</span> TestApi = { [path: <span class="hljs-built_in">string</span>]: Spec.JsonApiDocument };
-
-<span class="hljs-keyword">class</span> TestContext <span class="hljs-keyword">implements</span> JsonApi.Context {
-  <span class="hljs-keyword">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">private</span> readonly testApi: TestApi</span>) {}
-  getDocument(url: URL): <span class="hljs-built_in">Promise</span>&lt;Spec.JsonApiDocument&gt; {
-    <span class="hljs-keyword">if</span> (!(url.pathname <span class="hljs-keyword">in</span> <span class="hljs-keyword">this</span>.testApi)) {
-      <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.reject(<span class="hljs-string">`The path "<span class="hljs-subst">${url.pathname}</span>" was not found in testApi`</span>);
-    }
-    <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve(<span class="hljs-keyword">this</span>.testApi[url.pathname]);
-  }
-}</code></pre>
-					<p>You can then define a test API and use it in your unit tests:</p>
-					<pre><code class="language-typescript">describe(<span class="hljs-string">'A JSON:API related document'</span>, <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-  <span class="hljs-keyword">const</span> testApi: TestApi = {
-    <span class="hljs-string">'/articles/1'</span>: {
-      data: {
-        <span class="hljs-keyword">type</span>: <span class="hljs-string">'articles'</span>,
-        id: <span class="hljs-string">'1'</span>,
-        relationships: {
-          author: {
-            links: {
-              related: <span class="hljs-string">'http://example.com/people/9'</span>
-            }
-          }
-        }
-      }
-    },
-    <span class="hljs-string">'/people/9'</span>: {
-      data: {
-        <span class="hljs-keyword">type</span>: <span class="hljs-string">'people'</span>,
-        id: <span class="hljs-string">'9'</span>,
-        attributes: {
-          <span class="hljs-string">'first-name'</span>: <span class="hljs-string">'test'</span>,
-          <span class="hljs-string">'last-name'</span>: <span class="hljs-string">'test'</span>
-        }
-      }
-    }
-  };
-
-  <span class="hljs-keyword">const</span> context = <span class="hljs-keyword">new</span> TestContext(testApi);
-
-  it(<span class="hljs-string">'is fetched when the relationship is accessed'</span>, <span class="hljs-keyword">async</span> () =&gt; {
-    <span class="hljs-keyword">const</span> articleDoc = <span class="hljs-keyword">await</span> JsonApi.Document.fromURL(<span class="hljs-keyword">new</span> URL(<span class="hljs-string">'http://example.com/articles/1'</span>), context);
-    <span class="hljs-keyword">const</span> authorDoc = <span class="hljs-keyword">await</span> JsonApi.Document.fromURL(<span class="hljs-keyword">new</span> URL(<span class="hljs-string">'http://example.com/people/9'</span>), context);
-    <span class="hljs-keyword">const</span> article = articleDoc.resource;
-    <span class="hljs-keyword">const</span> author = authorDoc.resource;
-    <span class="hljs-keyword">const</span> relatedAuthor = <span class="hljs-keyword">await</span> article.relatedResource[<span class="hljs-string">'author'</span>];
-    expect(relatedAuthor).toEqual(author);
-  });
-});</code></pre>
+					<p>[[include:context.md]]</p>
 				</div>
 			</section>
 			<section class="tsd-panel tsd-hierarchy">
@@ -211,7 +110,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/fdfddee/src/index.ts#L49">index.ts:49</a></li>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/581c940/src/index.ts#L17">index.ts:17</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>

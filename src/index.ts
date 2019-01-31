@@ -1,40 +1,8 @@
 import { Spec } from './jsonapiSpec';
-import { SchemaChecker, SchemaError } from './schemaChecker';
+import { SchemaError } from './schemaChecker';
 import { memoized } from './memoized.decorator';
 
 export { Spec };
-
-function checkDocumentSchema(doc: Spec.JsonApiDocument) {
-  SchemaChecker.fromData(doc, 'Document')
-    .singleObject()
-    .atLeastOneOf(['data', 'errors', 'meta'])
-    .allowedMembers(['data', 'errors', 'meta', 'jsonapi', 'links', 'included']);
-  if ('data' in doc) {
-    if (Array.isArray(doc['data'])) {
-      for (const r of doc['data'] as object[]) {
-        checkResourceObjectSchema(r);
-      }
-    } else if (doc['data'] !== undefined) {
-      checkResourceObjectSchema(doc['data']);
-    }
-  }
-}
-
-function checkResourceObjectSchema(res: object | null) {
-  if (res === null) {
-    return;
-  }
-  SchemaChecker.fromData(res, 'Resource object')
-    .singleObject()
-    .has(['id', 'type'])
-    .allowedMembers(['id', 'type', 'attributes', 'relationships', 'links', 'meta']);
-}
-
-function checkRelationshipObjectSchema(rel: object) {
-  SchemaChecker.fromData(rel, 'Relationship object')
-    .singleObject()
-    .atLeastOneOf(['links', 'data', 'meta']);
-}
 
 export namespace JsonApi {
   export class CardinalityError extends Error {}
@@ -81,7 +49,7 @@ export namespace JsonApi {
       public readonly url?: URL,
       public readonly sparseFields?: SparseFields
     ) {
-      checkDocumentSchema(rawData);
+      Spec.checkDocumentSchema(rawData);
     }
 
     @memoized()
@@ -298,7 +266,7 @@ export namespace JsonApi {
     private readonly pRawData: Spec.ResourceObject;
 
     constructor(rawData: Spec.ResourceObject, document: Document, resourceType: string, context: Context, id?: string) {
-      checkResourceObjectSchema(rawData);
+      Spec.checkResourceObjectSchema(rawData);
       const passedId = id;
       id = rawData.id;
       if (passedId !== undefined && id !== passedId) {
@@ -347,7 +315,7 @@ export namespace JsonApi {
           `Resource with id "${this.id}" and type "${this.type}" found more than once in document`
         );
       }
-      checkResourceObjectSchema(filtered[0]);
+      Spec.checkResourceObjectSchema(filtered[0]);
       return filtered[0];
     }
   }
@@ -388,7 +356,7 @@ export namespace JsonApi {
       private readonly rawData: Spec.RelationshipObject,
       private readonly context: Context
     ) {
-      checkRelationshipObjectSchema(rawData);
+      Spec.checkRelationshipObjectSchema(rawData);
     }
 
     @memoized()

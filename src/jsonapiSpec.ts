@@ -4,8 +4,56 @@
 
 /** ignore */
 import { XOR } from './typeHelpers';
+import { SchemaChecker } from './schemaChecker';
 
 export namespace Spec {
+  /**
+   * Runtime checks for basic [[JsonApiDocument]] schema
+   *
+   * @throws [[SchemaError]]
+   */
+  export function checkDocumentSchema(doc: JsonApiDocument) {
+    SchemaChecker.fromData(doc, 'Document')
+      .singleObject()
+      .atLeastOneOf(['data', 'errors', 'meta'])
+      .allowedMembers(['data', 'errors', 'meta', 'jsonapi', 'links', 'included']);
+    if ('data' in doc) {
+      if (Array.isArray(doc['data'])) {
+        for (const r of doc['data'] as object[]) {
+          checkResourceObjectSchema(r);
+        }
+      } else if (doc['data'] !== undefined) {
+        checkResourceObjectSchema(doc['data']);
+      }
+    }
+  }
+
+  /**
+   * Runtime checks for basic [[ResourceObject]] schema
+   *
+   * @throws [[SchemaError]]
+   */
+  export function checkResourceObjectSchema(res: object | null) {
+    if (res === null) {
+      return;
+    }
+    SchemaChecker.fromData(res, 'Resource object')
+      .singleObject()
+      .has(['id', 'type'])
+      .allowedMembers(['id', 'type', 'attributes', 'relationships', 'links', 'meta']);
+  }
+
+  /**
+   * Runtime checks for basic [[RelationshipObject]] schema
+   *
+   * @throws [[SchemaError]]
+   */
+  export function checkRelationshipObjectSchema(rel: object) {
+    SchemaChecker.fromData(rel, 'Relationship object')
+      .singleObject()
+      .atLeastOneOf(['links', 'data', 'meta']);
+  }
+
   /**
    * @see https://jsonapi.org/format/#document-meta
    */
