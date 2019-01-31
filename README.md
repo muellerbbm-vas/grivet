@@ -23,6 +23,8 @@ A [JSON:API](https://jsonapi.org) client library written in Typescript with emph
 To give an idea of what using Grivet looks like, the code snippet below shows how to traverse from an API entry point to the author of a specific article:
 
 ```typescript
+import { JsonApi } from '@muellerbbm-vas/grivet';
+
 const apiEntryPointDoc = await JsonApi.Document.fromURL(new URL('http://example.com/api/'), context);
 const articles = await apiEntryPoint.resource.relatedResources['articles'];
 const author = await articles[0].relatedResource['author'];
@@ -30,7 +32,7 @@ const name = author.attributes['name'];
 ```
 
 In the first line, a JSON:API document is constructed from a given URL and a `Context` object
-([see the documentation on contexts](./doc/context.md) for more details). The `Promise` returned by the `fromURL` function is awaited to obtain the `Document` (corresponding to the [JSON:API top level document](https://jsonapi.org/format/#document-structure)). The raw JSON:API document fetched from the server might look something like this:
+([see the documentation on contexts](./docs/guides/context.md) for more details). The `Promise` returned by the `fromURL` function is awaited to obtain the `Document` (corresponding to the [JSON:API top level document](https://jsonapi.org/format/#document-structure)). The raw JSON:API document fetched from the server might look something like this:
 
 ```http
 GET http://example.com/api HTTP/1.1
@@ -103,7 +105,9 @@ We just `await` the `relatedResource` property.
 
 The attributes of the _author_ resource can then simply be obtained using its `attributes` property.
 
-Next, we will see how to provide the `Context` object needed to construct a `Document`.
+## Guides
+
+- [Implementing the `Context` interface](./docs/guides/context.md)
 
 ## Examples
 

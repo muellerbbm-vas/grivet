@@ -2,6 +2,7 @@
  * Memoization decorator for getters and methods without arguments.
  *
  * @throws `TypeError` when used on something other than getters or methods without arguments
+ * @hidden
  */
 export function memoized() {
   return function(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
@@ -18,8 +19,9 @@ export function memoized() {
   };
 }
 
+/** @hidden */
 function newFunction(original: () => any, propName: string): () => any {
-  return function (this: {[k: string]: any}, ...args: any[]): any {
+  return function(this: { [k: string]: any }, ...args: any[]): any {
     if (args.length > 0) {
       throw new TypeError('@memoized works only on methods without arguments');
     }
