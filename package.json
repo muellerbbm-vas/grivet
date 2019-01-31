@@ -35,7 +35,7 @@
     "prepare": "npm run build && npm run docs",
     "prepublishOnly": "npm run lint && npm test",
     "build": "npx tsc",
-    "docs": "npx typedoc --mode file --includes ./docs/guides --name \"Grivet Documentation\" --out ./docs ./src",
+    "docs": "npx typedoc --mode file --gitRevision master --includes ./docs/guides --name \"Grivet Documentation\" --out ./docs ./src",
     "watch": "npx tsc -watch",
     "test": "npx jest test",
     "lint": "npx tslint -p . -c tslint.json",
