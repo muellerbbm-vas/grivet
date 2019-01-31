@@ -1,5 +1,4 @@
-import { JsonApi } from '../src/index';
-import * as Spec from '../src/jsonapiSpec';
+import { JsonApi, Spec } from '../src/index';
 
 type TestApi = { [path: string]: Spec.JsonApiDocument };
 

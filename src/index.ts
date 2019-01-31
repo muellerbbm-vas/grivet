@@ -1,6 +1,7 @@
-import * as Spec from './jsonapiSpec';
+import { Spec } from './jsonapiSpec';
 import { SchemaChecker, SchemaError } from './schemaChecker';
 import { memoized } from './memoized.decorator';
+
 export { Spec };
 
 function checkDocumentSchema(doc: Spec.JsonApiDocument) {
