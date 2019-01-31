@@ -22,11 +22,5 @@
     "strict": true
   },
   "exclude": ["lib", "**/*.spec.ts"],
-  "files": [
-    "src/jsonapiSpec.ts",
-    "src/index.ts",
-    "src/memoized.decorator.ts",
-    "src/schemaChecker.ts",
-    "src/typeHelpers.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }
