@@ -87,7 +87,7 @@
 <span class="hljs-keyword">const</span> author = <span class="hljs-keyword">await</span> articles[<span class="hljs-number">0</span>].relatedResource[<span class="hljs-string">'author'</span>];
 <span class="hljs-keyword">const</span> name = author.attributes[<span class="hljs-string">'name'</span>];</code></pre>
 				<p>In the first line, a JSON:API document is constructed from a given URL and a <code>Context</code> object
-				(<a href="./docs/guides/context.md">see the documentation on contexts</a> for more details). The <code>Promise</code> returned by the <code>fromURL</code> function is awaited to obtain the <code>Document</code> (corresponding to the <a href="https://jsonapi.org/format/#document-structure">JSON:API top level document</a>). The raw JSON:API document fetched from the server might look something like this:</p>
+				(<a href="./guides/context.md">see the documentation on contexts</a> for more details). The <code>Promise</code> returned by the <code>fromURL</code> function is awaited to obtain the <code>Document</code> (corresponding to the <a href="https://jsonapi.org/format/#document-structure">JSON:API top level document</a>). The raw JSON:API document fetched from the server might look something like this:</p>
 				<pre><code class="language-http"><span class="hljs-keyword">GET</span> <span class="hljs-string">http://example.com/api</span> HTTP/1.1
 <span class="hljs-attribute">Accept</span>: application/vnd.api+json
 
@@ -151,7 +151,7 @@
 				<p>The attributes of the <em>author</em> resource can then simply be obtained using its <code>attributes</code> property.</p>
 				<h2 id="guides">Guides</h2>
 				<ul>
-					<li><a href="./docs/guides/context.md">Implementing the <code>Context</code> interface</a></li>
+					<li><a href="./guides/context.md">Implementing the <code>Context</code> interface</a></li>
 				</ul>
 				<h2 id="examples">Examples</h2>
 				<h3 id="listing-all-relationships-of-a-resource">Listing all relationships of a resource</h3>
