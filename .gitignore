@@ -50,3 +50,6 @@ typings/
 
 # Built files
 /lib
+
+# Generated documentation
+/docs
