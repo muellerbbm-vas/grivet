@@ -42,6 +42,8 @@ export namespace JsonApi {
 
   /**
    * Implement this interface to define how Documents are fetched from `related` links
+   *
+   * [[include:context.md]]
    */
   export interface Context {
     getDocument(url: URL): Promise<Spec.JsonApiDocument>;
