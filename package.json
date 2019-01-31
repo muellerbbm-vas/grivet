@@ -32,9 +32,10 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test",
+    "prepare": "npm run build && npm run docs",
+    "prepublishOnly": "npm run lint && npm test",
     "build": "npx tsc",
+    "docs": "npx typedoc --mode file --gitRevision master --includes ./guides --name \"Grivet Documentation\" --out ./docs ./src",
     "watch": "npx tsc -watch",
     "test": "npx jest test",
     "lint": "npx tslint -p . -c tslint.json",
@@ -64,10 +65,8 @@
     "pretty-quick": "1.10.0",
     "ts-jest": "23.10.5",
     "tslint": "5.12.1",
+    "typedoc": "0.14.2",
     "typescript": "3.2.4"
   },
-  "dependencies": {},
-  "files": [
-    "lib/**/*"
-  ]
+  "dependencies": {}
 }

@@ -1,5 +1,4 @@
-import { JsonApi } from '../src/index';
-import * as Spec from '../src/jsonapiSpec';
+import { JsonApi, Spec } from '../src/index';
 
 type TestApi = { [path: string]: Spec.JsonApiDocument };
 
@@ -182,6 +181,15 @@ describe('A JSON:API resource object', () => {
           }
         }
       }
+    },
+    '/articles/2': {
+      data: {
+        id: '2',
+        type: 'articles',
+        meta: {
+          xyz: { abc: 123 }
+        }
+      }
     }
   };
 
@@ -234,6 +242,13 @@ describe('A JSON:API resource object', () => {
     const resource = document.resource;
     expect(resource.selfLink).toBeDefined();
     expect(resource.selfLink.url.href).toEqual(testApi[documentPath].data['links']['self']);
+  });
+
+  it('may contain meta data without links', async () => {
+    const document = await makeDocument('/articles/2', testApi);
+    const resource = document.resource;
+    expect(resource.metaLinks).toBeDefined();
+    expect(resource.metaLinks).toEqual({});
   });
 });
 
@@ -378,6 +393,7 @@ describe('A JSON:API compound document', () => {
   it('complains about relationships with neither "data" nor "links" members', async () => {
     const brokenArticle = (await makeDocument('/articles/broken', testApi)).resource;
     await expect(brokenArticle.relatedResource['author']).rejects.toBeDefined();
+    await expect(brokenArticle.relatedResources['author']).rejects.toBeDefined();
   });
 
   it('can link from one included resource to another', async () => {
@@ -510,13 +526,42 @@ describe('A non-compliant JSON:API compound document with duplicate resources', 
 
   const documentPath = '/articles';
 
-  it('complains when a type/id pair is found more than conce', async () => {
+  it('complains when a type/id pair is found more than once', async () => {
     const document = await makeDocument(documentPath, testApi);
     const article1 = document.resources[0];
     const other = await article1.relatedResource['other'];
     expect(() => {
       other.attributes;
     }).toThrow(/found more than once/);
+  });
+});
+
+describe('A JSON:API document with no included resources', () => {
+  const testApi: TestApi = {
+    '/articles': {
+      data: [
+        {
+          type: 'articles',
+          id: '1',
+          relationships: {
+            other: {
+              data: { type: 'articles', id: '2' }
+            }
+          }
+        }
+      ]
+    }
+  };
+
+  const documentPath = '/articles';
+
+  it('complains when trying to access a related resource', async () => {
+    const document = await makeDocument(documentPath, testApi);
+    const article1 = document.resources[0];
+    const other = await article1.relatedResource['other'];
+    expect(() => {
+      other.attributes;
+    }).toThrow(/not found in document/);
   });
 });
 
@@ -531,6 +576,11 @@ describe('A JSON:API related document', () => {
             links: {
               related: 'http://example.com/people/9'
             }
+          },
+          comments: {
+            links: {
+              related: 'http://example.com/comments'
+            }
           }
         }
       }
@@ -544,18 +594,35 @@ describe('A JSON:API related document', () => {
           'last-name': 'test'
         }
       }
+    },
+    '/comments': {
+      data: [
+        {
+          type: 'comments',
+          id: '1'
+        }
+      ]
     }
   };
 
   const context = new TestContext(testApi);
 
-  it('is fetched when the relationship is accessed', async () => {
+  it('is fetched when the relationship is accessed (single)', async () => {
     const articleDoc = await JsonApi.Document.fromURL(new URL('http://example.com/articles/1'), context);
     const authorDoc = await JsonApi.Document.fromURL(new URL('http://example.com/people/9'), context);
     const article = articleDoc.resource;
     const author = authorDoc.resource;
     const relatedAuthor = await article.relatedResource['author'];
     expect(relatedAuthor).toEqual(author);
+  });
+
+  it('is fetched when the relationship is accessed (multiple)', async () => {
+    const articleDoc = await JsonApi.Document.fromURL(new URL('http://example.com/articles/1'), context);
+    const commentsDoc = await JsonApi.Document.fromURL(new URL('http://example.com/comments'), context);
+    const article = articleDoc.resource;
+    const comments = commentsDoc.resources;
+    const relatedComments = await article.relatedResources['comments'];
+    expect(relatedComments).toEqual(comments);
   });
 });
 
@@ -608,6 +675,13 @@ describe('A related resource identified via path name only ', () => {
             links: {
               related: '/people/9'
             }
+          },
+          author2: {
+            links: {
+              related: {
+                href: '/people/9'
+              }
+            }
           }
         }
       }
@@ -629,6 +703,8 @@ describe('A related resource identified via path name only ', () => {
     const author = (await makeDocument('/people/9', testApi)).resource;
     const relatedAuthor = await article.relatedResource['author'];
     expect(relatedAuthor).toEqual(author);
+    const relatedAuthor2 = await article.relatedResource['author2'];
+    expect(relatedAuthor2).toEqual(author);
   });
 });
 

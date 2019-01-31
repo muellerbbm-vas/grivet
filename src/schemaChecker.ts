@@ -1,5 +1,6 @@
 export class SchemaError extends Error {}
 
+/** @hidden */
 export class SchemaChecker {
   static fromData(data: object, name: string) {
     return new SchemaChecker(data, name);
