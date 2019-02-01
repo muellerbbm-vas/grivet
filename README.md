@@ -142,7 +142,11 @@ If the server also implements sparse fieldsets, the `article` resource will cont
 
 ### More examples
 
-See `test/tests.spec.ts` for more examples of how to use this library.
+See [test/tests.spec.ts](./test/tests.spec.ts) for more examples of how to use this library.
+
+## Reference documentation
+
+Have a look at the [library reference](https://muellerbbm-vas.github.io/grivet/docs/index.html) for more details.
 
 ## TODO
 
