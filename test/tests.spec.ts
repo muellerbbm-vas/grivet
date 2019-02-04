@@ -653,13 +653,13 @@ describe('Construction of resources from existing JSON objects', () => {
   });
 
   it('is possible for main resources', () => {
-    const res = new JsonApi.MainResource(rawResource, doc, 'articles', new DummyContext());
+    const res = new JsonApi.PrimaryResource(rawResource, doc, 'articles', new DummyContext());
     expect(res.attributes['name']).toContain('xxx');
   });
 
   it('fails when there is an id mismatch', () => {
     expect(() => {
-      const res = new JsonApi.MainResource(rawResource, doc, 'articles', new DummyContext(), '123');
+      const res = new JsonApi.PrimaryResource(rawResource, doc, 'articles', new DummyContext(), '123');
     }).toThrow(/ID in rawData does not match given ID/);
   });
 });

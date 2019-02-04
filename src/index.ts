@@ -78,14 +78,14 @@ export namespace JsonApi {
      * @throws [[CardinalityError]] if the document instead only contains a singular resource.
      */
     @memoized()
-    get resources(): MainResource[] {
+    get resources(): PrimaryResource[] {
       if (!this.hasManyResources) {
         throw new CardinalityError(
           'Document does not contain an array of resources. Use the `resource` property instead'
         );
       }
       return (<Spec.ResourceObject[]>this.rawData.data).map(
-        primaryData => new MainResource(primaryData, this, primaryData.type, this.context)
+        primaryData => new PrimaryResource(primaryData, this, primaryData.type, this.context)
       );
     }
 
@@ -94,7 +94,7 @@ export namespace JsonApi {
      * @throws [[CardinalityError]] if the document instead contains an array of resources.
      */
     @memoized()
-    get resource(): MainResource | null {
+    get resource(): PrimaryResource | null {
       if (this.hasManyResources) {
         throw new CardinalityError('Document contains an array of resources. Use the `resources` property instead');
       }
@@ -102,7 +102,7 @@ export namespace JsonApi {
         return null;
       }
       const primaryData = <Spec.ResourceObject>this.rawData.data;
-      return new MainResource(primaryData, this, primaryData.type, this.context);
+      return new PrimaryResource(primaryData, this, primaryData.type, this.context);
     }
 
     /**
@@ -301,14 +301,14 @@ export namespace JsonApi {
   }
 
   /**
-   * A main resource contained in the `data` member of the top level [[Document]].
+   * A resource contained in the top level `data` member of the [[Document]].
    *
-   * Always constructed non-lazy from the parent [[Document]].
+   * Always constructed non-lazily from the parent [[Document]].
    *
    * @throws [[IdMismatchError]] when the optional `id` argument does not match the id present in `rawData`
    * @throws [[SchemaError]] when `rawData` does not look like a JSON:API resource object
    */
-  export class MainResource extends Resource {
+  export class PrimaryResource extends Resource {
     private readonly pRawData: Spec.ResourceObject;
 
     constructor(rawData: Spec.ResourceObject, document: Document, resourceType: string, context: Context, id?: string) {
