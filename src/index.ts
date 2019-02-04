@@ -15,7 +15,8 @@ export namespace JsonApi {
   export class IdMismatchError extends Error {}
 
   /**
-   * Implement this interface to define how Documents are fetched from `related` links
+   * Implement this interface to define how a [[JsonApiDocument]] (the JSON:API raw data) is fetched from `related` links,
+   * e.g. from a remote server via HTTP.
    *
    * [[include:guides/context.md]]
    */
@@ -32,13 +33,14 @@ export namespace JsonApi {
   export type SparseFields = { [resourceType: string]: FieldNames };
 
   /**
-   * Holds an `application/vnd.api+json` document and provides methods to access the resources in that document.
-   * This is also the entry point that can be initialized with a root service URL (as given by the user).
-   * Use the static `fromURL` method to fetch and construct a `Document` from a given URL.
+   * Holds an `application/vnd.api+json` [document](https://jsonapi.org/format/#document-top-level) and
+   * provides methods to access the resources in that document.
+   * This is the main class that acts as an entry point to traverse to other resources.
+   * Use the static [[fromURL]] method to fetch and construct a [[Document]] from a given URL.
    */
   export class Document {
     /**
-     * Fetch data from the given URL and construct a `Document` from it.
+     * Fetch data from the given URL and construct a [[Document]] from it.
      * If `sparseFields` are given, only those fields are requested from the server.
      */
     static async fromURL(url: URL, context: Context, sparseFields?: SparseFields): Promise<Document> {
@@ -50,9 +52,9 @@ export namespace JsonApi {
     }
 
     /**
-     * Directly construct a `Document` from raw JSON:API data. Does not fetch any data from a server.
+     * Directly construct a [[Document]] from raw JSON:API data. Does not fetch any data from a server.
      * An optional URL can be provided to indicate where the raw data came from.
-     * @throws SchemaError when the given rawData does not look like a JSON:API document
+     * @throws [[SchemaError]] when the given rawData does not look like a JSON:API document
      */
     constructor(
       readonly rawData: Spec.JsonApiDocument,
@@ -72,8 +74,8 @@ export namespace JsonApi {
     }
 
     /**
-     * List of the main (top level) resource objects in this document.
-     * @throws `CardinalityError` if the document only contains a singular resource object.
+     * List of the main (primary) [[Resource]]s in this document.
+     * @throws [[CardinalityError]] if the document instead only contains a singular resource.
      */
     @memoized()
     get resources(): MainResource[] {
@@ -88,8 +90,8 @@ export namespace JsonApi {
     }
 
     /**
-     * The main (top level) resource object in this document.
-     * @throws `CardinalityError` if the document contains an array of resource objects.
+     * The main (primary) [[Resource]] in this document.
+     * @throws [[CardinalityError]] if the document instead contains an array of resources.
      */
     @memoized()
     get resource(): MainResource | null {
@@ -104,7 +106,7 @@ export namespace JsonApi {
     }
 
     /**
-     * Map from type and id to resource object for all resources under the top level `included` member
+     * Map from type and id to [[Resource]] for all resources under the top level `included` member
      */
     @memoized()
     get includedResources(): IncludedResourcesMap {
@@ -184,6 +186,7 @@ export namespace JsonApi {
 
   /**
    * Represents a JSON:API resource object
+   * @see https://jsonapi.org/format/#document-resource-objects
    */
   export abstract class Resource {
     constructor(
@@ -209,7 +212,7 @@ export namespace JsonApi {
     }
 
     /**
-     * Map containing all relationship objects defined by this resource
+     * Map containing all [[Relationship]]s defined by this resource
      */
     @memoized()
     get relationships(): Relationships {
@@ -228,7 +231,7 @@ export namespace JsonApi {
     }
 
     /**
-     * Map containing all links defined by this resource
+     * Map containing all [[Link]]s defined by this resource
      */
     @memoized()
     get links(): Links {
@@ -276,21 +279,21 @@ export namespace JsonApi {
     }
 
     /**
-     * Map containing all multiple resources reachable via relationships from this resource.
+     * Map containing all multiple [[Resource]]s reachable via relationships from this resource.
      */
     get relatedResources() {
       return new Proxy(<RelationshipToResources>{}, new RelatedResourcesAccessor(this));
     }
 
     /**
-     * Map containing all singular resources reachable via relationships from this resource.
+     * Map containing all singular [[Resource]]s reachable via relationships from this resource.
      */
     get relatedResource() {
       return new Proxy(<RelationshipToResource>{}, new RelatedResourceAccessor(this));
     }
 
     /**
-     * Map containing all documents reachable via relationships from this resource.
+     * Map containing all [[Document]]s reachable via relationships from this resource.
      */
     get relatedDocuments() {
       return new Proxy(<RelationshipToDocument>{}, new RelatedDocumentAccessor(this));
@@ -298,12 +301,12 @@ export namespace JsonApi {
   }
 
   /**
-   * A main resource contained in the `data` member of the top level JSON:API document.
+   * A main resource contained in the `data` member of the top level [[Document]].
    *
-   * Always contructed non-lazy from the parent document.
+   * Always constructed non-lazy from the parent [[Document]].
    *
-   * @throws `IdMismatchError` when the optional `id` argument does not match the id present in `rawData`
-   * @throws `SchemaError` when `rawData` does not look like a JSON:API resource object
+   * @throws [[IdMismatchError]] when the optional `id` argument does not match the id present in `rawData`
+   * @throws [[SchemaError]] when `rawData` does not look like a JSON:API resource object
    */
   export class MainResource extends Resource {
     private readonly pRawData: Spec.ResourceObject;
@@ -325,11 +328,11 @@ export namespace JsonApi {
   }
 
   /**
-   * A resource contained in the top level `included` member of the JSON:API document or linked via href.
+   * A resource contained in the top level `included` member of the [[Document]] or linked via href.
    *
    * Is initialized on demand via the `getData` method.
    *
-   * @throws `IdMismatchError` when `id` was not found in the given `document`
+   * @throws [[IdMismatchError]] when `id` was not found in the given `document`
    */
   export class RelatedResource extends Resource {
     constructor(document: Document, id: string, resourceType: string, context: Context) {
@@ -337,9 +340,9 @@ export namespace JsonApi {
     }
 
     /**
-     * Find the matching resource in the parent document
-     * @throws `IdMismatchError` if the resource is not found or found multiple times
-     * @throws `SchemaError` when `rawData` does not look like a JSON:API resource object
+     * Find the matching resource in the parent [[Document]]
+     * @throws [[IdMismatchError]] if the resource is not found or found multiple times
+     * @throws [[SchemaError]] when `rawData` does not look like a JSON:API resource object
      */
     protected getData(): Spec.ResourceObject {
       const primaryDataArray = this.document.hasManyResources
@@ -392,8 +395,8 @@ export namespace JsonApi {
   }
 
   /**
-   * Defines relations to resources (included in the document or external) and can resolve them.
-   * @throws `SchemaError` when `rawData` does not look like a JSON:API relationship object
+   * Defines relations to [[Resource]]s (included in the document or external) and can resolve them.
+   * @throws [[SchemaError]] when `rawData` does not look like a JSON:API relationship object
    */
   export class Relationship {
     constructor(
@@ -411,7 +414,7 @@ export namespace JsonApi {
     }
 
     /**
-     * Map of link names to links defined under the `links` member of this relationship
+     * Map of link names to [[Link]]s defined under the `links` member of this relationship
      */
     @memoized()
     get links(): Links | undefined {
@@ -426,7 +429,7 @@ export namespace JsonApi {
     }
 
     /**
-     * One or many resource identifiers defined in the `data` member of this relationship
+     * One or many [[ResourceIdentifierObject]]s defined in the `data` member of this relationship
      */
     @memoized()
     get data(): Spec.ResourceIdentifierObject | Spec.ResourceIdentifierObject[] | undefined | null {
@@ -434,7 +437,7 @@ export namespace JsonApi {
     }
 
     /**
-     * The document referred to by the `related` link in the `links` member of the relationship
+     * The [[Document]] referred to by the `related` link in the `links` member of the relationship
      */
     @memoized()
     async relatedDocument(): Promise<Document | undefined> {
@@ -444,9 +447,9 @@ export namespace JsonApi {
     }
 
     /**
-     * List of resources referenced by this relationship (if there are many resources).
-     * @throws `CardinalityError` if there is only a singular resource.
-     * @throws `SchemaError` if neither a `links` nor a `data` member is present
+     * List of [[Resource]]s referenced by this relationship (if there are many resources).
+     * @throws [[CardinalityError]] if there is only a singular resource.
+     * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
      */
     @memoized()
     async resources(): Promise<Resource[]> {
@@ -471,9 +474,9 @@ export namespace JsonApi {
     }
 
     /**
-     * The one resource referenced by this relationship.
-     * @throws `CardinalityError` if there are many resources.
-     * @throws `SchemaError` if neither a `links` nor a `data` member is present
+     * The one [[Resource]] referenced by this relationship.
+     * @throws [[CardinalityError]] if there are many resources.
+     * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
      */
     @memoized()
     async resource(): Promise<Resource | null | undefined> {
