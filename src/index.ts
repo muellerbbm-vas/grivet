@@ -4,8 +4,14 @@ import { memoized } from './memoized.decorator';
 
 export { Spec };
 
+/**
+ * This is the main module of Grivet. It contains the [[Document]], [[Resource]] and [[Relationship]] classes that
+ * perform most of the work interpreting a JSON:API structure.
+ */
 export namespace JsonApi {
+  /** Thrown when there is mismatch between the expected resource count (one or many) and the actual resource count */
   export class CardinalityError extends Error {}
+  /** Thrown when an explicitly provided id does not match the id received from the server */
   export class IdMismatchError extends Error {}
 
   /**
@@ -14,10 +20,15 @@ export namespace JsonApi {
    * [[include:guides/context.md]]
    */
   export interface Context {
+    /**
+     * Should return a `Promise` resolving to the JSON:API document for the given `url`
+     */
     getDocument(url: URL): Promise<Spec.JsonApiDocument>;
   }
 
+  /** List of fields that should be fetched from the server */
   export type FieldNames = string[];
+  /** Mapping from resource type to sparse fields */
   export type SparseFields = { [resourceType: string]: FieldNames };
 
   /**
@@ -52,6 +63,9 @@ export namespace JsonApi {
       Spec.checkDocumentSchema(rawData);
     }
 
+    /**
+     * `true` if this document's primary data is an array of resources and not just a single resource
+     */
     @memoized()
     get hasManyResources(): boolean {
       return Array.isArray(this.rawData.data);
@@ -111,15 +125,27 @@ export namespace JsonApi {
     }
   }
 
-  type IncludedResourcesMap = { [type: string]: { [id: string]: RelatedResource } };
-  type Relationships = { [relationshipName: string]: Relationship };
-  type Links = { [linkName: string]: Link };
+  /** Collection of [[RelatedResource]]s included in a compound document, organized by type and id */
+  export type IncludedResourcesMap = { [type: string]: { [id: string]: RelatedResource } };
+  /** Mapping from relationship name to [[Relationship]] */
+  export type Relationships = { [relationshipName: string]: Relationship };
+  /** Mapping from link name to [[Link]] */
+  export type Links = { [linkName: string]: Link };
+
+  /** @hidden */
   type RelationshipToResource = { [relationshipName: string]: Resource };
+  /** @hidden */
   type RelationshipToResources = { [relationshipName: string]: Resource[] };
+  /** @hidden */
   type RelationshipToDocument = { [relationshipName: string]: Document };
 
-  export class RelatedResourceAccessor<T extends RelationshipToResource> implements ProxyHandler<T> {
+  /** @hidden */
+  class RelatedResourceAccessor<T extends RelationshipToResource> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
+    /**
+     * Provide access to parent related resource
+     * @hidden
+     */
     async get(target: T, relationshipName: string, receiver: any): Promise<Resource | null | undefined> {
       if (relationshipName in this.parent.relationships) {
         return this.parent.relationships[relationshipName].resource();
@@ -127,8 +153,13 @@ export namespace JsonApi {
     }
   }
 
-  export class RelatedResourcesAccessor<T extends RelationshipToResources> implements ProxyHandler<T> {
+  /** @hidden */
+  class RelatedResourcesAccessor<T extends RelationshipToResources> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
+    /**
+     * Provide access to parent related resources
+     * @hidden
+     */
     async get(target: T, relationshipName: string, receiver: any): Promise<Resource[]> {
       if (relationshipName in this.parent.relationships) {
         return this.parent.relationships[relationshipName].resources();
@@ -137,8 +168,13 @@ export namespace JsonApi {
     }
   }
 
-  export class RelatedDocumentAccessor<T extends RelationshipToDocument> implements ProxyHandler<T> {
+  /** @hidden */
+  class RelatedDocumentAccessor<T extends RelationshipToDocument> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
+    /**
+     * Provide access to parent related document
+     * @hidden
+     */
     async get(target: T, relationshipName: string, receiver: any): Promise<Document | undefined> {
       if (relationshipName in this.parent.relationships) {
         return this.parent.relationships[relationshipName].relatedDocument();
@@ -159,11 +195,15 @@ export namespace JsonApi {
 
     protected abstract getData(): Spec.ResourceObject;
 
+    /** The raw JSON:API data of this resource */
     @memoized()
     get rawData(): Spec.ResourceObject {
       return this.getData();
     }
 
+    /**
+     * Object containing all [attributes](https://jsonapi.org/format/#document-resource-object-attributes) of this resource
+     */
     get attributes(): Spec.AttributesObject | undefined {
       return this.rawData.attributes;
     }
@@ -220,6 +260,9 @@ export namespace JsonApi {
       return result;
     }
 
+    /**
+     * Object containing all [meta data](https://jsonapi.org/format/#document-meta) of this resource
+     */
     @memoized()
     get meta(): Spec.MetaObject | undefined {
       return this.rawData.meta;
@@ -324,7 +367,9 @@ export namespace JsonApi {
    * Represents a link with URL and optional meta data
    */
   export class Link {
+    /** The complete url for this link */
     url: URL;
+    /** Any additional meta data */
     meta?: object;
 
     constructor(rawData: Spec.Link, referringDocumentURL?: URL) {
@@ -359,6 +404,7 @@ export namespace JsonApi {
       Spec.checkRelationshipObjectSchema(rawData);
     }
 
+    /** `true` if the relationship only contains a `meta` member and no `data` or `links` */
     @memoized()
     get empty(): boolean {
       return this.links === undefined && this.data === undefined;
@@ -455,6 +501,10 @@ export namespace JsonApi {
     }
   }
 
+  /**
+   * Some helpers for constructing a document to POST to a server
+   * @hidden
+   */
   export class ClientDocument {
     private readonly rawData: Spec.ClientJsonApiDocument;
 
@@ -465,6 +515,7 @@ export namespace JsonApi {
       }
     }
 
+    /** Sets a primary resource attribute @hidden */
     setAttribute(name: string, value: string) {
       if (!this.rawData.data.attributes) {
         this.rawData.data.attributes = {};
@@ -472,6 +523,7 @@ export namespace JsonApi {
       this.rawData.data.attributes[name] = value;
     }
 
+    /** Adds a named relationship to a resource @hidden */
     setRelationship(
       name: string,
       ressourceIdentifier: Spec.ResourceIdentifierObject | Spec.ResourceIdentifierObject[]
@@ -482,6 +534,7 @@ export namespace JsonApi {
       this.rawData.data.relationships[name] = { data: ressourceIdentifier };
     }
 
+    /** Adds the resource to `included` @hidden */
     includeResource(resource: Spec.ResourceObject) {
       if (!this.rawData.included) {
         this.rawData.included = [];
@@ -489,6 +542,7 @@ export namespace JsonApi {
       this.rawData.included.push(resource);
     }
 
+    /** Adds the resources to `included` @hidden */
     includeResources(resources: Spec.ResourceObject[]) {
       if (!this.rawData.included) {
         this.rawData.included = [];
@@ -496,6 +550,7 @@ export namespace JsonApi {
       this.rawData.included.push(...resources);
     }
 
+    /** The raw JSON:API data @hidden */
     get data(): Spec.ClientJsonApiDocument {
       return this.rawData;
     }

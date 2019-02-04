@@ -1,15 +1,13 @@
-/**
- * Types modelling the [JSON:API](https://jsonapi.org/format/#document-structure) specification
- */
-
-/** ignore */
+/** @hidden */
 import { XOR } from './typeHelpers';
 import { SchemaChecker } from './schemaChecker';
 
+/**
+ * Types modelling the [JSON:API](https://jsonapi.org/format/#document-structure) specification.
+ */
 export namespace Spec {
   /**
    * Runtime checks for basic [[JsonApiDocument]] schema
-   *
    * @throws [[SchemaError]]
    */
   export function checkDocumentSchema(doc: JsonApiDocument) {
@@ -30,7 +28,6 @@ export namespace Spec {
 
   /**
    * Runtime checks for basic [[ResourceObject]] schema
-   *
    * @throws [[SchemaError]]
    */
   export function checkResourceObjectSchema(res: object | null) {
@@ -45,7 +42,6 @@ export namespace Spec {
 
   /**
    * Runtime checks for basic [[RelationshipObject]] schema
-   *
    * @throws [[SchemaError]]
    */
   export function checkRelationshipObjectSchema(rel: object) {
@@ -53,6 +49,8 @@ export namespace Spec {
       .singleObject()
       .atLeastOneOf(['links', 'data', 'meta']);
   }
+
+  /* tslint:disable:completed-docs */
 
   /**
    * @see https://jsonapi.org/format/#document-meta
