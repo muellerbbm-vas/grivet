@@ -32,8 +32,8 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "prepare": "npm run build && npm run docs",
-    "prepublishOnly": "npm run lint && npm test",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint && npm test && npm run docs",
     "build": "npx tsc",
     "docs": "npx typedoc --mode file --gitRevision master --readme none --includes ./ --name \"Grivet Reference\" --out ./docs ./src",
     "watch": "npx tsc -watch",
@@ -52,7 +52,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged"
+      "pre-commit": "pretty-quick --staged && npm run lint",
+      "pre-push": "npm run test && npm run docs"
     }
   },
   "devDependencies": {
