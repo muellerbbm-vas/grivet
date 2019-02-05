@@ -1,19 +1,16 @@
-# Implementing the `Context` interface
+## Implementing the `Context` interface
 
 A method to fetch resources that are not included in a document has to be provided by the user of Grivet by implementing the `Context` interface. This makes the library more easily adaptable to various frameworks and different HTTP client libraries. The `Context` interface looks like this:
 
 ```typescript
-/**
- * Implement this interface to define how Documents are fetched from `related` links
- */
 export interface Context {
   getDocument(url: URL): Promise<Spec.JsonApiDocument>;
 }
 ```
 
-Basically, a `Context` implementation just has to provide a `getDocument` method that returns a `Promise` of a `JsonApiDocument` when given a `URL`. Just one thing to keep in mind: As per the [specification](https://jsonapi.org/format/#content-negotiation-clients), a request to a JSON:API server has to include the `Accept` header with the value `application/vnd.api+json`.
+Basically, a `Context` implementation just has to provide a `getDocument` method that returns a `Promise` of a `JsonApiDocument` when given a `URL`. Just one thing to keep in mind: As per the [specification](https://jsonapi.org/format/1.0/#content-negotiation-clients), a request to a JSON:API server has to include the `Accept` header with the value `application/vnd.api+json`.
 
-## Example Angular http context
+### Example Angular http context
 
 An implementation based on the Angular http client could look like this:
 
@@ -34,7 +31,7 @@ export class AngularHttpContext implements JsonApi.Context {
 
 In the above example, an Angular http client is used with its `Observable` converted to a `Promise`. The `Accept` header is set in the constructor so that all subsequent requests use this value.
 
-## Example Node http context using axios
+### Example Node http context using axios
 
 ```typescript
 import { JsonApi, Spec } from '@muellerbbm-vas/grivet';
@@ -62,7 +59,7 @@ export class NodeHttpContext implements JsonApi.Context {
 }
 ```
 
-## Example context for testing
+### Example context for testing
 
 A `Context` implementation does not have to perform any HTTP requests. It can also just return responses from any other source, such as pre-defined responses for testing purposes. The following `Context` takes a `TestApi` object and just returns a resolved `Promise` filled with data taken from the `TestApi` object keyed by `pathname`:
 

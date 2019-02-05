@@ -4,6 +4,8 @@ import { SchemaChecker } from './schemaChecker';
 
 /**
  * Types modelling the [JSON:API v1.0](https://jsonapi.org/format/1.0/#document-structure) specification.
+ *
+ * The type names are chosen to correspond to the language used in the official JSON:API specification.
  */
 export namespace Spec {
   /**
@@ -140,6 +142,7 @@ export namespace Spec {
    * When sent by the client the id is not required
    *
    * @see https://jsonapi.org/format/1.0/#document-resource-objects
+   * @hidden
    */
   export type ClientResourceObject = {
     id?: string;
@@ -196,6 +199,7 @@ export namespace Spec {
    * Some aspects of an JSON API document which are usually sufficient for client requests
    *
    * @see https://jsonapi.org/format/1.0/#document-top-level
+   * @hidden
    */
   export type ClientJsonApiDocument = {
     data: ClientResourceObject;

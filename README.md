@@ -10,13 +10,15 @@ A [JSON:API](https://jsonapi.org) client library written in Typescript with emph
 - `Promise`-based access to resources allowing `async`/`await` style programming
 - Adaptable to various HTTP client implementations
 - Support for sparse fieldsets
-- Uses memoization to avoid repeated network requests
+- Uses memoization to avoid repeated network requests and repeated traversals of the document structure
 - No dependencies (apart from `jest` for testing)
 - Implemented against the JSON:API 1.0 specification.
 
 ## Installation
 
-    npm i @muellerbbm-vas/grivet
+```bash
+npm i @muellerbbm-vas/grivet
+```
 
 ## Basic Usage
 
