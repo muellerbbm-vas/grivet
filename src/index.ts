@@ -33,7 +33,7 @@ export namespace JsonApi {
   export type SparseFields = { [resourceType: string]: FieldNames };
 
   /**
-   * Holds an `application/vnd.api+json` [document](https://jsonapi.org/format/#document-top-level) and
+   * Holds an `application/vnd.api+json` [document](https://jsonapi.org/format/1.0/#document-top-level) and
    * provides methods to access the resources in that document.
    * This is the main class that acts as an entry point to traverse to other resources.
    * Use the static [[fromURL]] method to fetch and construct a [[Document]] from a given URL.
@@ -205,7 +205,7 @@ export namespace JsonApi {
     }
 
     /**
-     * Object containing all [attributes](https://jsonapi.org/format/#document-resource-object-attributes) of this resource
+     * Object containing all [attributes](https://jsonapi.org/format/1.0/#document-resource-object-attributes) of this resource
      */
     get attributes(): Spec.AttributesObject | undefined {
       return this.rawData.attributes;
@@ -264,7 +264,7 @@ export namespace JsonApi {
     }
 
     /**
-     * Object containing all [meta data](https://jsonapi.org/format/#document-meta) of this resource
+     * Object containing all [meta data](https://jsonapi.org/format/1.0/#document-meta) of this resource
      */
     @memoized()
     get meta(): Spec.MetaObject | undefined {

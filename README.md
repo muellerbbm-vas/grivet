@@ -32,7 +32,7 @@ const name = author.attributes['name'];
 ```
 
 In the first line, a JSON:API document is constructed from a given URL and a `Context` object
-([see the documentation on contexts](./guides/context.md) for more details). The `Promise` returned by the `fromURL` function is awaited to obtain the `Document` (corresponding to the [JSON:API top level document](https://jsonapi.org/format/#document-structure)). The raw JSON:API document fetched from the server might look something like this:
+([see the documentation on contexts](./guides/context.md) for more details). The `Promise` returned by the `fromURL` function is awaited to obtain the `Document` (corresponding to the [JSON:API top level document](https://jsonapi.org/format/1.0/#document-structure)). The raw JSON:API document fetched from the server might look something like this:
 
 ```http
 GET http://example.com/api HTTP/1.1
@@ -62,10 +62,11 @@ Content-Type: application/vnd.api+json
 ```
 
 The entry point document contains a primary resource with a relationship named "articles" pointing to the _articles_ resources.
-The second line of our short example gets the primary entry point resource and then directly awaits the `relatedResources` property to fetch the _articles_ resources as an array of `Resource` objects (corresponding to [JSON:API resource objects](https://jsonapi.org/format/#document-resource-objects)).
+The second line of our short example gets the primary entry point resource and then directly awaits the `relatedResources` property to fetch the
+_articles_ resources as an array of `Resource` objects (corresponding to [JSON:API resource objects](https://jsonapi.org/format/1.0/#document-resource-objects)).
 As recommended by HATEOAS principles, we do not need to know the URL of the _articles_ resource in advance, we just follow the provided relationship.
 
-Let's assume the server responds with the following compound JSON:API document:
+Let's assume the server responds with the following [compound JSON:API document](https://jsonapi.org/format/1.0/#document-compound-documents):
 
 ```http
 GET http://example.com/articles HTTP/1.1
@@ -133,9 +134,9 @@ Have a look at the [library reference](https://muellerbbm-vas.github.io/grivet/d
 
 ## TODO
 
-- [Sorting](https://jsonapi.org/format/#fetching-sorting)
-- [Pagination](https://jsonapi.org/format/#fetching-pagination)
-- [Filtering](https://jsonapi.org/format/#fetching-filtering)
+- [Sorting](https://jsonapi.org/format/1.0/#fetching-sorting)
+- [Pagination](https://jsonapi.org/format/1.0/#fetching-pagination)
+- [Filtering](https://jsonapi.org/format/1.0/#fetching-filtering)
 
 ## License
 

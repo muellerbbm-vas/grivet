@@ -3,7 +3,7 @@ import { XOR } from './typeHelpers';
 import { SchemaChecker } from './schemaChecker';
 
 /**
- * Types modelling the [JSON:API](https://jsonapi.org/format/#document-structure) specification.
+ * Types modelling the [JSON:API v1.0](https://jsonapi.org/format/1.0/#document-structure) specification.
  */
 export namespace Spec {
   /**
@@ -53,7 +53,7 @@ export namespace Spec {
   /* tslint:disable:completed-docs */
 
   /**
-   * @see https://jsonapi.org/format/#document-meta
+   * @see https://jsonapi.org/format/1.0/#document-meta
    */
   export type MetaObject = {
     links?: LinksObject;
@@ -61,14 +61,14 @@ export namespace Spec {
   };
 
   /**
-   * @see https://jsonapi.org/format/#document-resource-object-attributes
+   * @see https://jsonapi.org/format/1.0/#document-resource-object-attributes
    */
   export type AttributesObject = {
     [attrName: string]: any;
   };
 
   /**
-   * @see https://jsonapi.org/format/#document-links
+   * @see https://jsonapi.org/format/1.0/#document-links
    */
   export type LinkObject = {
     href: string;
@@ -76,19 +76,19 @@ export namespace Spec {
   };
 
   /**
-   * @see https://jsonapi.org/format/#document-links
+   * @see https://jsonapi.org/format/1.0/#document-links
    */
   export type Link = string | LinkObject;
 
   /**
-   * @see https://jsonapi.org/format/#document-links
+   * @see https://jsonapi.org/format/1.0/#document-links
    */
   export type LinksObject = {
     [linkName: string]: Link;
   };
 
   /**
-   * @see https://jsonapi.org/format/#document-top-level
+   * @see https://jsonapi.org/format/1.0/#document-top-level
    */
   export type TopLevelLinksObject = {
     self?: Link;
@@ -100,7 +100,7 @@ export namespace Spec {
   };
 
   /**
-   * @see https://jsonapi.org/format/#document-resource-identifier-objects
+   * @see https://jsonapi.org/format/1.0/#document-resource-identifier-objects
    */
   export type ResourceIdentifierObject = {
     id: string;
@@ -109,7 +109,7 @@ export namespace Spec {
   };
 
   /**
-   * @see https://jsonapi.org/format/#document-resource-object-relationships
+   * @see https://jsonapi.org/format/1.0/#document-resource-object-relationships
    */
   export type RelationshipObject = {
     links?: LinksObject;
@@ -118,14 +118,14 @@ export namespace Spec {
   };
 
   /**
-   * @see https://jsonapi.org/format/#document-resource-object-relationships
+   * @see https://jsonapi.org/format/1.0/#document-resource-object-relationships
    */
   export type RelationshipsObject = {
     [relationshipName: string]: RelationshipObject;
   };
 
   /**
-   * @see https://jsonapi.org/format/#document-resource-objects
+   * @see https://jsonapi.org/format/1.0/#document-resource-objects
    */
   export type ResourceObject = {
     id: string;
@@ -139,7 +139,7 @@ export namespace Spec {
   /**
    * When sent by the client the id is not required
    *
-   * @see https://jsonapi.org/format/#document-resource-objects
+   * @see https://jsonapi.org/format/1.0/#document-resource-objects
    */
   export type ClientResourceObject = {
     id?: string;
@@ -151,7 +151,7 @@ export namespace Spec {
   };
 
   /**
-   * @see https://jsonapi.org/format/#error-objects
+   * @see https://jsonapi.org/format/1.0/#error-objects
    */
   export type ErrorObject = {
     id?: string;
@@ -169,7 +169,7 @@ export namespace Spec {
   };
 
   /**
-   * @see https://jsonapi.org/format/#document-jsonapi-object
+   * @see https://jsonapi.org/format/1.0/#document-jsonapi-object
    */
   export type JsonApiObject = {
     version?: string;
@@ -180,7 +180,7 @@ export namespace Spec {
    * This type looks a bit more complicated, as we require either the `data` or `errors` property,
    * but not both at the same time.
    *
-   * @see https://jsonapi.org/format/#document-top-level
+   * @see https://jsonapi.org/format/1.0/#document-top-level
    */
   export type JsonApiDocument = XOR<
     { data: ResourceObject | ResourceObject[] | ResourceIdentifierObject | ResourceIdentifierObject[] | null },
@@ -195,7 +195,7 @@ export namespace Spec {
   /**
    * Some aspects of an JSON API document which are usually sufficient for client requests
    *
-   * @see https://jsonapi.org/format/#document-top-level
+   * @see https://jsonapi.org/format/1.0/#document-top-level
    */
   export type ClientJsonApiDocument = {
     data: ClientResourceObject;
