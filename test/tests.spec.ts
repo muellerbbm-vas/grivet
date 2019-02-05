@@ -16,6 +16,8 @@ function makeDocument(path: string, testApi: TestApi): Promise<JsonApi.Document>
   return JsonApi.Document.fromURL(new URL(`http://example.com${path}`), new TestContext(testApi));
 }
 
+/* tslint:disable:no-unused-expression */
+
 describe('The JSON:API top level structure', () => {
   const testApi: TestApi = {
     '/article/null': { data: null },
@@ -155,7 +157,7 @@ describe('A JSON:API resource object', () => {
         id: '1',
         type: 'articles',
         attributes: {
-          title: 'abc',
+          title: 'dummy',
           nested: { level2: [11, 22, 33], x: 'y' }
         },
         relationships: {
@@ -318,7 +320,7 @@ describe('A JSON:API compound document', () => {
           type: 'comments',
           id: '12',
           attributes: {
-            body: 'abc'
+            body: 'dummy'
           },
           relationships: {
             author: {
@@ -422,7 +424,7 @@ describe('A JSON:API compound document', () => {
     expect((await commentAuthor.relatedResource['doc']).attributes['title']).toContain('JSON:API');
   });
 
-  it('complains about non-existant type/id pairs', async () => {
+  it('complains about non-existent type/id pairs', async () => {
     const document = await makeDocument(documentPath, testApi);
     const article = document.resource;
     const firstCommentAuthorRelationship = await (await article.relatedResources['comments'])[0].relationships[
@@ -459,7 +461,7 @@ describe('A JSON:API compound document with multiple main resources', () => {
           type: 'articles',
           id: '2',
           attributes: {
-            title: 'abc'
+            title: 'dummy'
           },
           relationships: {
             author: {
@@ -493,7 +495,7 @@ describe('A JSON:API compound document with multiple main resources', () => {
     const article1 = document.resources[0];
     const relatedDocs = await (await article1.relatedResource['author']).relatedResources['doc'];
     expect(relatedDocs.length).toBe(2);
-    expect(relatedDocs[1].attributes['title']).toContain('abc');
+    expect(relatedDocs[1].attributes['title']).toContain('dummy');
   });
 });
 
@@ -637,7 +639,7 @@ describe('Construction of resources from existing JSON objects', () => {
     data: {
       id: '1',
       type: 'articles',
-      attributes: { title: 'abc' }
+      attributes: { title: 'dummy' }
     }
   };
   const doc = new JsonApi.Document(rawDoc, new DummyContext());
@@ -649,17 +651,17 @@ describe('Construction of resources from existing JSON objects', () => {
   };
 
   it('is possible for documents', () => {
-    expect(doc.resource.attributes['title']).toContain('abc');
+    expect(doc.resource.attributes['title']).toContain('dummy');
   });
 
   it('is possible for main resources', () => {
-    const res = new JsonApi.MainResource(rawResource, doc, 'articles', new DummyContext());
+    const res = new JsonApi.PrimaryResource(rawResource, doc, 'articles', new DummyContext());
     expect(res.attributes['name']).toContain('xxx');
   });
 
   it('fails when there is an id mismatch', () => {
     expect(() => {
-      const res = new JsonApi.MainResource(rawResource, doc, 'articles', new DummyContext(), '123');
+      const res = new JsonApi.PrimaryResource(rawResource, doc, 'articles', new DummyContext(), '123');
     }).toThrow(/ID in rawData does not match given ID/);
   });
 });

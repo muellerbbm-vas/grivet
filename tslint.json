@@ -45,6 +45,22 @@
     "no-floating-promises": true,
     "no-invalid-this": true,
     "semicolon": true,
-    "trailing-comma": true
+    "trailing-comma": true,
+    "completed-docs": [
+      true,
+      {
+        "enums": true,
+        "functions": { "visibilities": ["exported"] },
+        "methods": { "privacies": ["public"] },
+        "properties": {
+          "privacies": ["public"]
+        },
+        "classes": { "visibilities": ["exported"] },
+        "interfaces": { "visibilities": ["exported"], "tags": { "existence": ["hidden", "see"] } },
+        "types": { "visibilities": ["exported"], "tags": { "existence": ["hidden", "see"] } },
+        "variables": { "visibilities": ["exported"], "tags": { "existence": ["hidden", "see"] } },
+        "namespaces": { "visibilities": ["exported"] }
+      }
+    ]
   }
 }

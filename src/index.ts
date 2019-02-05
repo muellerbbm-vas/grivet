@@ -4,31 +4,73 @@ import { memoized } from './memoized.decorator';
 
 export { Spec };
 
+/**
+ * This is the main module of Grivet.
+ *
+ * It contains the [[Document]], [[Resource]] and [[Relationship]] classes that
+ * perform most of the work interpreting a JSON:API structure.
+ *
+ * Normally you would start by creating a [[Document]] from existing JSON:API data or using the [[Document.fromURL]]
+ * method to fetch data from a server. Then you can examine the resources in that document ([[Document.resource]]
+ * or [[Document.resources]]) and traverse to other related resources ([[Resource.relatedResource]] or
+ * [[Resource.relatedResources]]).
+ *
+ * You have to provide an implementation of the [[Context]] interface to specify how documents should be fetched from
+ * URLs. The documentation of the [[Context]] interface shows several possible implementations (e.g. using the Angular http client
+ * or Axios).
+ *
+ * Based on version 1.0 of JSON:API.
+ */
 export namespace JsonApi {
+  /** Thrown when there is mismatch between the expected resource count (one or many) and the actual resource count */
   export class CardinalityError extends Error {}
+  /** Thrown when an explicitly provided id does not match the id received from the server */
   export class IdMismatchError extends Error {}
 
   /**
-   * Implement this interface to define how Documents are fetched from `related` links
+   * Implement this interface to define how a [[JsonApiDocument]] (the JSON:API raw data) is fetched from a given URL.
    *
-   * [[include:context.md]]
+   * [[include:guides/context.md]]
    */
   export interface Context {
+    /**
+     * Should return a `Promise` resolving to the JSON:API document for the given `url`
+     */
     getDocument(url: URL): Promise<Spec.JsonApiDocument>;
   }
 
+  /** List of fields that should be fetched from the server */
   export type FieldNames = string[];
+  /** Mapping from resource type to sparse fields */
   export type SparseFields = { [resourceType: string]: FieldNames };
 
   /**
-   * Holds an `application/vnd.api+json` document and provides methods to access the resources in that document.
-   * This is also the entry point that can be initialized with a root service URL (as given by the user).
-   * Use the static `fromURL` method to fetch and construct a `Document` from a given URL.
+   * Holds an `application/vnd.api+json` [document](https://jsonapi.org/format/1.0/#document-top-level) and
+   * provides methods to access the resources in that document.
+   *
+   * This is the main class that acts as an entry point to traverse to other resources.
+   * Use the static [[fromURL]] method to fetch and construct a [[Document]] from a given URL.
+   *
+   * Methods and accessors marked as `memoized` are only executed once per instance (the first time they are called)
+   * and return a cached result on subsequent calls.
+   *
+   * @see https://jsonapi.org/format/1.0/#document-top-level
    */
   export class Document {
     /**
-     * Fetch data from the given URL and construct a `Document` from it.
-     * If `sparseFields` are given, only those fields are requested from the server.
+     * Fetch JSON:API data from the given URL and construct a [[Document]] from it.
+     *
+     * ### Simplest example
+     *
+     * Fetching a document from a server:
+     * ```typescript
+     * const articleDoc = await JsonApi.Document.fromURL(new URL('http://example.com/article/1'), context);
+     * const article = articleDoc.resource;
+     * ```
+     * [[include:guides/sparseFieldsets.md]]
+     *
+     * @param context Context that will provide the JSON:API data, normally by fetching it from a server
+     * @param sparseFields Only these fields (per type) are requested from the server
      */
     static async fromURL(url: URL, context: Context, sparseFields?: SparseFields): Promise<Document> {
       for (const resourceType in sparseFields) {
@@ -39,9 +81,12 @@ export namespace JsonApi {
     }
 
     /**
-     * Directly construct a `Document` from raw JSON:API data. Does not fetch any data from a server.
-     * An optional URL can be provided to indicate where the raw data came from.
-     * @throws SchemaError when the given rawData does not look like a JSON:API document
+     * Directly construct a [[Document]]. Does not fetch any data from a server.
+     * @param rawData The raw JSON:API data describing the document
+     * @param context The context to use to fetch related documents (not used during the initial construction)
+     * @param url An optional URL can be provided to indicate where the raw data came from
+     * @param sparseFields An object listing [sparse fieldsets](https://jsonapi.org/format/1.0/#fetching-sparse-fieldsets) for subsequent fetch operations
+     * @throws [[SchemaError]] when the given rawData does not look like a JSON:API document
      */
     constructor(
       readonly rawData: Spec.JsonApiDocument,
@@ -52,33 +97,65 @@ export namespace JsonApi {
       Spec.checkDocumentSchema(rawData);
     }
 
+    /**
+     * `true` if this document's primary data is an array of resources and not just a single resource
+     * @memoized
+     */
     @memoized()
     get hasManyResources(): boolean {
       return Array.isArray(this.rawData.data);
     }
 
     /**
-     * List of the main (top level) resource objects in this document.
-     * @throws `CardinalityError` if the document only contains a singular resource object.
+     * Array of the primary [[Resource]]s in this document. For example the JSON:API document
+     *
+     * ```json
+     * {
+     *   "data": [{
+     *     "type": "articles",
+     *     "id": "1"
+     *   }]
+     * }
+     * ```
+     *
+     * would have a primary resource array of length 1 with one element with type "articles" and id "1".
+     *
+     * @returns Empty array when no primary resources are contained in the document
+     * @throws [[CardinalityError]] if the document instead only contains a singular resource.
+     * @memoized
      */
     @memoized()
-    get resources(): MainResource[] {
+    get resources(): PrimaryResource[] {
       if (!this.hasManyResources) {
         throw new CardinalityError(
           'Document does not contain an array of resources. Use the `resource` property instead'
         );
       }
       return (<Spec.ResourceObject[]>this.rawData.data).map(
-        primaryData => new MainResource(primaryData, this, primaryData.type, this.context)
+        primaryData => new PrimaryResource(primaryData, this, primaryData.type, this.context)
       );
     }
 
     /**
-     * The main (top level) resource object in this document.
-     * @throws `CardinalityError` if the document contains an array of resource objects.
+     * The primary [[Resource]] in this document. For example the JSON:API document
+     *
+     * ```json
+     * {
+     *   "data": {
+     *     "type": "articles",
+     *     "id": "1"
+     *   }
+     * }
+     * ```
+     *
+     * would have a primary resource with type "articles" and id "1".
+     *
+     * @returns Null if the primary data consists of the value `null`
+     * @throws [[CardinalityError]] if the document instead contains an array of resources.
+     * @memoized
      */
     @memoized()
-    get resource(): MainResource | null {
+    get resource(): PrimaryResource | null {
       if (this.hasManyResources) {
         throw new CardinalityError('Document contains an array of resources. Use the `resources` property instead');
       }
@@ -86,11 +163,36 @@ export namespace JsonApi {
         return null;
       }
       const primaryData = <Spec.ResourceObject>this.rawData.data;
-      return new MainResource(primaryData, this, primaryData.type, this.context);
+      return new PrimaryResource(primaryData, this, primaryData.type, this.context);
     }
 
     /**
-     * Map from type and id to resource object for all resources under the top level `included` member
+     * Map from type and id to [[RelatedResource]] for all resources under the top level `included` member.
+     * For example for the JSON:API document
+     *
+     * ```json
+     * {
+     *   "data": null,
+     *   "included": [
+     *      {"type": "articles", "id": "1"},
+     *      {"type": "articles", "id": "2"},
+     *      {"type": "people", "id": "5"}
+     *    ]
+     * }
+     * ```
+     * calling `includedResources` would produce
+     * ```typescript
+     * {
+     *   articles: {
+     *     '1': RelatedResource(...),
+     *     '2': RelatedResource(...),
+     *   },
+     *   people: {
+     *     '5': RelatedResource(...)
+     *   }
+     * }
+     * ```
+     * @memoized
      */
     @memoized()
     get includedResources(): IncludedResourcesMap {
@@ -111,15 +213,27 @@ export namespace JsonApi {
     }
   }
 
-  type IncludedResourcesMap = { [type: string]: { [id: string]: RelatedResource } };
-  type Relationships = { [relationshipName: string]: Relationship };
-  type Links = { [linkName: string]: Link };
+  /** Collection of [[RelatedResource]]s included in a compound document, organized by type and id */
+  export type IncludedResourcesMap = { [type: string]: { [id: string]: RelatedResource } };
+  /** Mapping from relationship name to [[Relationship]] */
+  export type Relationships = { [relationshipName: string]: Relationship };
+  /** Mapping from link name to [[Link]] */
+  export type Links = { [linkName: string]: Link };
+
+  /** @hidden */
   type RelationshipToResource = { [relationshipName: string]: Resource };
+  /** @hidden */
   type RelationshipToResources = { [relationshipName: string]: Resource[] };
+  /** @hidden */
   type RelationshipToDocument = { [relationshipName: string]: Document };
 
-  export class RelatedResourceAccessor<T extends RelationshipToResource> implements ProxyHandler<T> {
+  /** @hidden */
+  class RelatedResourceAccessor<T extends RelationshipToResource> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
+    /**
+     * Provide access to parent related resource
+     * @hidden
+     */
     async get(target: T, relationshipName: string, receiver: any): Promise<Resource | null | undefined> {
       if (relationshipName in this.parent.relationships) {
         return this.parent.relationships[relationshipName].resource();
@@ -127,8 +241,13 @@ export namespace JsonApi {
     }
   }
 
-  export class RelatedResourcesAccessor<T extends RelationshipToResources> implements ProxyHandler<T> {
+  /** @hidden */
+  class RelatedResourcesAccessor<T extends RelationshipToResources> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
+    /**
+     * Provide access to parent related resources
+     * @hidden
+     */
     async get(target: T, relationshipName: string, receiver: any): Promise<Resource[]> {
       if (relationshipName in this.parent.relationships) {
         return this.parent.relationships[relationshipName].resources();
@@ -137,8 +256,13 @@ export namespace JsonApi {
     }
   }
 
-  export class RelatedDocumentAccessor<T extends RelationshipToDocument> implements ProxyHandler<T> {
+  /** @hidden */
+  class RelatedDocumentAccessor<T extends RelationshipToDocument> implements ProxyHandler<T> {
     constructor(private readonly parent: Resource) {}
+    /**
+     * Provide access to parent related document
+     * @hidden
+     */
     async get(target: T, relationshipName: string, receiver: any): Promise<Document | undefined> {
       if (relationshipName in this.parent.relationships) {
         return this.parent.relationships[relationshipName].relatedDocument();
@@ -147,9 +271,24 @@ export namespace JsonApi {
   }
 
   /**
-   * Represents a JSON:API resource object
+   * This class represents a [JSON:API resource object](https://jsonapi.org/format/1.0/#document-resource-objects)
+   * and is used as base class for [[PrimaryResource]]s and [[RelatedResource]]s.
+   *
+   * The abstract [[getData]] method is implemented in the derived classes to specify how
+   * the raw JSON:API data is obtained.
+   *
+   * Methods and accessors marked as `memoized` are only executed once per instance (the first time they are called)
+   * and return a cached result on subsequent calls.
+   *
+   * @see https://jsonapi.org/format/1.0/#document-resource-objects
    */
   export abstract class Resource {
+    /**
+     * @param document The parent document that contains this resource
+     * @param id The id of this resource
+     * @param type The resource type
+     * @param context The context to use to fetch related documents
+     */
     constructor(
       protected readonly document: Document,
       public readonly id: string,
@@ -159,17 +298,26 @@ export namespace JsonApi {
 
     protected abstract getData(): Spec.ResourceObject;
 
+    /**
+     * The raw JSON:API data of this resource
+     * @memoized
+     */
     @memoized()
     get rawData(): Spec.ResourceObject {
       return this.getData();
     }
 
+    /**
+     * Object containing all [attributes](https://jsonapi.org/format/1.0/#document-resource-object-attributes) of this resource
+     */
     get attributes(): Spec.AttributesObject | undefined {
       return this.rawData.attributes;
     }
 
     /**
-     * Map containing all relationship objects defined by this resource
+     * Object containing all [[Relationship]]s defined by this resource
+     * @see https://jsonapi.org/format/1.0/#document-resource-object-relationships
+     * @memoized
      */
     @memoized()
     get relationships(): Relationships {
@@ -188,7 +336,9 @@ export namespace JsonApi {
     }
 
     /**
-     * Map containing all links defined by this resource
+     * Object containing all [[Link]]s defined by this resource
+     * @see https://jsonapi.org/format/1.0/#document-links
+     * @memoized
      */
     @memoized()
     get links(): Links {
@@ -203,7 +353,9 @@ export namespace JsonApi {
     }
 
     /**
-     * Map containing all entries inside `links` of `meta` interpreted as JSON:API Link (either string or link object)
+     * Object containing all entries inside `links` of `meta` interpreted as
+     * JSON:API Link (either string or link object)
+     * @memoized
      */
     @memoized()
     get metaLinks(): Links {
@@ -220,6 +372,10 @@ export namespace JsonApi {
       return result;
     }
 
+    /**
+     * Object containing all [meta data](https://jsonapi.org/format/1.0/#document-meta) of this resource
+     * @memoized
+     */
     @memoized()
     get meta(): Spec.MetaObject | undefined {
       return this.rawData.meta;
@@ -233,21 +389,122 @@ export namespace JsonApi {
     }
 
     /**
-     * Map containing all multiple resources reachable via relationships from this resource.
+     * Proxy providing all multiple [[Resource]]s reachable via relationships from this resource.
+     * For example, for this JSON:API document
+     *
+     * ```json
+     * {
+     *   "data": {
+     *     "type": "articles",
+     *     "id": "1",
+     *     "relationships": {
+     *       "comments": {
+     *         "data": [{"type":"comments", "id":"1"}, {"type":"comments", "id":"2"}]
+     *       },
+     *       "ratings": {
+     *         "data": [{"type":"ratings", "id":"1"}, {"type":"ratings", "id":"2"}]
+     *       }
+     *     }
+     *   },
+     *   "included": [...]
+     * }
+     * ```
+     *
+     * calling `relatedResources` on the primary _articles_ resource will give you access to the following data:
+     *
+     * ```typescript
+     * {
+     *   comments: [
+     *     RelatedResource(...),
+     *     RelatedResource(...)
+     *   ],
+     *   ratings: [
+     *     RelatedResource(...),
+     *     RelatedResource(...)
+     *   ]
+     * }
+     * ```
+     *
+     * As this is only a proxy object, calling `relatedResources` will not yet construct any [[RelatedResource]]
+     * instances. Only when accessing a specific related resource (e.g. calling `article.relatedResources['comments']`)
+     * are the new resources actually constructed.
      */
     get relatedResources() {
       return new Proxy(<RelationshipToResources>{}, new RelatedResourcesAccessor(this));
     }
 
     /**
-     * Map containing all singular resources reachable via relationships from this resource.
+     * Proxy providing all singular [[Resource]]s reachable via relationships from this resource.
+     * For example, for this JSON:API document
+     *
+     * ```json
+     * {
+     *   "data": {
+     *     "type": "articles",
+     *     "id": "1",
+     *     "relationships": {
+     *       "author": {
+     *         "data": {"type":"people", "id":"1"}
+     *       },
+     *       "reviewer": {
+     *         "data": {"type":"people", "id":"12"}
+     *       }
+     *     }
+     *   },
+     *   "included": [...]
+     * }
+     * ```
+     *
+     * calling `relatedResource` on the primary _articles_ resource will give you access to the following data:
+     *
+     * ```typescript
+     * {
+     *   author: RelatedResource(...),
+     *   reviewer: RelatedResource(...)
+     * }
+     * ```
+     *
+     * As this is only a proxy object, calling `relatedResource` will not yet construct any [[RelatedResource]]
+     * instances. Only when accessing a specific related resource (e.g. calling `article.relatedResource['author']`)
+     * is the new resource actually constructed.
      */
     get relatedResource() {
       return new Proxy(<RelationshipToResource>{}, new RelatedResourceAccessor(this));
     }
 
     /**
-     * Map containing all documents reachable via relationships from this resource.
+     * Proxy providing all [[Document]]s reachable via `related` links in relationships.
+     * For example, for this JSON:API document
+     *
+     * ```json
+     * {
+     *   "data": {
+     *     "type": "articles",
+     *     "id": "1",
+     *     "relationships": {
+     *       "author": {
+     *         "links": {"related": "http://example.com/people/1"}
+     *       },
+     *       "reviewer": {
+     *         "links": {"related": "http://example.com/people/12"}
+     *       }
+     *     }
+     *   }
+     * }
+     * ```
+     *
+     * calling `relatedDocuments` on the primary _articles_ resource will give you access to the following data:
+     *
+     * ```typescript
+     * {
+     *   author: Document(...),
+     *   reviewer: Document(...)
+     * }
+     * ```
+     *
+     * As this is only a proxy object, calling `relatedDocuments` does not yet fetch any related documents.
+     * Only when accessing a specific related document (e.g. calling `article.relatedDocuments['author']`) is the
+     * new document actually requested from the server.
      */
     get relatedDocuments() {
       return new Proxy(<RelationshipToDocument>{}, new RelatedDocumentAccessor(this));
@@ -255,16 +512,35 @@ export namespace JsonApi {
   }
 
   /**
-   * A main resource contained in the `data` member of the top level JSON:API document.
+   * A resource contained in the top level `data` member of a [[Document]].
    *
-   * Always contructed non-lazy from the parent document.
+   * Always constructed non-lazily from raw JSON:API data. Normally this is
+   * done automatically when accessing the [[Document.resource]] or [[Document.resources]]
+   * accessors, for example:
    *
-   * @throws `IdMismatchError` when the optional `id` argument does not match the id present in `rawData`
-   * @throws `SchemaError` when `rawData` does not look like a JSON:API resource object
+   * ```typescript
+   * // a document containing one _article_ resource
+   * const doc = await JsonApi.Document.fromURL(new URL('http://example.com/article'), context);
+   * const article = doc.resource;  // the primary resource
+   * ```
+   *
+   * Methods and accessors marked as `memoized` are only executed once per instance (the first time they are called)
+   * and return a cached result on subsequent calls.
    */
-  export class MainResource extends Resource {
+  export class PrimaryResource extends Resource {
     private readonly pRawData: Spec.ResourceObject;
 
+    /**
+     * Directly construct a primary resource. Normally a primary resource is obtained via the [[Document.resource]]
+     * or [[Document.resources]] accessors while traversing a document structure.
+     * @param rawData The JSON:API resource object from which to construct this primary resource
+     * @param document The parent document that contains this primary resource
+     * @param resourceType The type of this resource
+     * @param context The context to use to fetch related documents
+     * @param id The id of this resource
+     * @throws [[IdMismatchError]] when the optional `id` argument does not match the id present in `rawData`
+     * @throws [[SchemaError]] when `rawData` does not look like a [JSON:API resource object](https://jsonapi.org/format/1.0/#document-resource-objects)
+     */
     constructor(rawData: Spec.ResourceObject, document: Document, resourceType: string, context: Context, id?: string) {
       Spec.checkResourceObjectSchema(rawData);
       const passedId = id;
@@ -282,21 +558,44 @@ export namespace JsonApi {
   }
 
   /**
-   * A resource contained in the top level `included` member of the JSON:API document or linked via href.
+   * A resource contained in the top level `included` member of a [[Document]] or linked via href.
    *
-   * Is initialized on demand via the `getData` method.
+   * This resource is initialized lazily on demand when its [[getData]] method is first called.
+   * The resource then looks for its id and type (given at construction) in the parent document
+   * `data` and `included` members to find its raw data.
    *
-   * @throws `IdMismatchError` when `id` was not found in the given `document`
+   * Normally a related resource is obtained via the [[Resource.relatedResource]] and [[Resource.relatedResources]]
+   * accessors or the [[Relationship.resource]] and [[Relationship.resources]] methods, for example:
+   *
+   * ```typescript
+   * // a document containing one _article_ resource with a related _author_ resource
+   * const doc = await JsonApi.Document.fromURL(new URL('http://example.com/article'), context);
+   * const article = doc.resource;  // the primary resource
+   * const author = await article.relatedResource['author'];  // the related resource
+   * ```
+   *
+   * Methods and accessors marked as `memoized` are only executed once per instance (the first time they are called)
+   * and return a cached result on subsequent calls.
    */
   export class RelatedResource extends Resource {
+    /**
+     * Directly construct a related document. It will be lazily initialized from `document` on first use,
+     * so we need to provide an id and a type here so that the resource can find itself in `document`.
+     * @param document The parent document that contains this related resource
+     * @param id The id of this resource
+     * @param resourceType The type of this resource
+     * @param context The context to use to fetch related documents
+     * @throws [[IdMismatchError]] when `id` was not found in the given `document`
+     */
     constructor(document: Document, id: string, resourceType: string, context: Context) {
       super(document, id, resourceType, context);
     }
 
     /**
-     * Find the matching resource in the parent document
-     * @throws `IdMismatchError` if the resource is not found or found multiple times
-     * @throws `SchemaError` when `rawData` does not look like a JSON:API resource object
+     * Looks up the matching resource in the parent [[Document]]. All primary resources (those in the `data` member)
+     * and all included resources (those in the `included` member) are searched.
+     * @throws [[IdMismatchError]] if the resource is not found or found multiple times
+     * @throws [[SchemaError]] when `rawData` does not look like a [JSON:API resource object](https://jsonapi.org/format/1.0/#document-resource-objects)
      */
     protected getData(): Spec.ResourceObject {
       const primaryDataArray = this.document.hasManyResources
@@ -322,11 +621,19 @@ export namespace JsonApi {
 
   /**
    * Represents a link with URL and optional meta data
+   * @see https://jsonapi.org/format/1.0/#document-links
    */
   export class Link {
-    url: URL;
-    meta?: object;
+    /** The complete url for this link */
+    readonly url: URL;
+    /** Any additional meta data */
+    readonly meta?: object;
 
+    /**
+     * @param rawData Can be a string containing an href or a [[LinkObject]]
+     * @param referringDocumentURL The _origin_ part of this URL will be used as prefix if `rawData` only refers to a
+     * pathname and not a full URL
+     */
     constructor(rawData: Spec.Link, referringDocumentURL?: URL) {
       const origin = referringDocumentURL ? referringDocumentURL.origin : '';
       if (typeof rawData === 'string') {
@@ -347,10 +654,27 @@ export namespace JsonApi {
   }
 
   /**
-   * Defines relations to resources (included in the document or external) and can resolve them.
-   * @throws `SchemaError` when `rawData` does not look like a JSON:API relationship object
+   * Defines relations from one [[Resource]] to another (included in the document or external) and can resolve them.
+   *
+   * This class is normally not used directly. It is used internally in the [[relatedResource]], [[relatedResources]]
+   * and [[relatedDocuments]] accessors and you should use those if you just want to gain access to other resources.
+   *
+   * If you need to work with relationships directly (e.g. to obtain meta data about the relationship itself), you can
+   * use the [[Resource.relationships]] accessor.
+   *
+   * Methods and accessors marked as `memoized` are only executed once per instance (the first time they are called)
+   * and return a cached result on subsequent calls.
+   *
+   * @see https://jsonapi.org/format/1.0/#document-resource-object-relationships
    */
   export class Relationship {
+    /**
+     * Directly construct a relationship
+     * @param referringDocument The document that contains the relationship
+     * @param rawData The JSON:API relationship object from which to construct the relationship
+     * @param context The context to use to fetch related documents
+     * @throws [[SchemaError]] when `rawData` does not look like a [JSON:API relationship object](https://jsonapi.org/format/1.0/#document-resource-object-relationships)
+     */
     constructor(
       private readonly referringDocument: Document,
       private readonly rawData: Spec.RelationshipObject,
@@ -359,13 +683,18 @@ export namespace JsonApi {
       Spec.checkRelationshipObjectSchema(rawData);
     }
 
+    /**
+     * `true` if the relationship only contains a `meta` member and no `data` or `links`
+     * @memoized
+     */
     @memoized()
     get empty(): boolean {
       return this.links === undefined && this.data === undefined;
     }
 
     /**
-     * Map of link names to links defined under the `links` member of this relationship
+     * Map of link names to [[Link]]s defined under the `links` member of this relationship
+     * @memoized
      */
     @memoized()
     get links(): Links | undefined {
@@ -380,7 +709,8 @@ export namespace JsonApi {
     }
 
     /**
-     * One or many resource identifiers defined in the `data` member of this relationship
+     * One or many [[ResourceIdentifierObject]]s defined in the `data` member of this relationship
+     * @memoized
      */
     @memoized()
     get data(): Spec.ResourceIdentifierObject | Spec.ResourceIdentifierObject[] | undefined | null {
@@ -388,7 +718,10 @@ export namespace JsonApi {
     }
 
     /**
-     * The document referred to by the `related` link in the `links` member of the relationship
+     * The [[Document]] referred to by the `related` link in the `links` member of the relationship.
+     * Fetches the related document from the server using the context given at construction and respecting any
+     * sparseFields of the referring document.
+     * @memoized
      */
     @memoized()
     async relatedDocument(): Promise<Document | undefined> {
@@ -398,9 +731,12 @@ export namespace JsonApi {
     }
 
     /**
-     * List of resources referenced by this relationship (if there are many resources).
-     * @throws `CardinalityError` if there is only a singular resource.
-     * @throws `SchemaError` if neither a `links` nor a `data` member is present
+     * List of [[Resource]]s referenced by this relationship (if there are many resources).
+     * Resource identifiers found in the `data` member of this relationship have priority.
+     * If there is no `data` member, the primary resources found in [[relatedDocument]] is used.
+     * @throws [[CardinalityError]] if there is only a singular resource.
+     * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
+     * @memoized
      */
     @memoized()
     async resources(): Promise<Resource[]> {
@@ -425,9 +761,12 @@ export namespace JsonApi {
     }
 
     /**
-     * The one resource referenced by this relationship.
-     * @throws `CardinalityError` if there are many resources.
-     * @throws `SchemaError` if neither a `links` nor a `data` member is present
+     * The one [[Resource]] referenced by this relationship.
+     * The resource identifier found in the `data` member of this relationship has priority.
+     * If there is no `data` member, the primary resource found in [[relatedDocument]] is used.
+     * @throws [[CardinalityError]] if there are many resources.
+     * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
+     * @memoized
      */
     @memoized()
     async resource(): Promise<Resource | null | undefined> {
@@ -455,6 +794,10 @@ export namespace JsonApi {
     }
   }
 
+  /**
+   * Some helpers for constructing a document to POST to a server
+   * @hidden
+   */
   export class ClientDocument {
     private readonly rawData: Spec.ClientJsonApiDocument;
 
@@ -465,6 +808,7 @@ export namespace JsonApi {
       }
     }
 
+    /** Sets a primary resource attribute @hidden */
     setAttribute(name: string, value: string) {
       if (!this.rawData.data.attributes) {
         this.rawData.data.attributes = {};
@@ -472,6 +816,7 @@ export namespace JsonApi {
       this.rawData.data.attributes[name] = value;
     }
 
+    /** Adds a named relationship to a resource @hidden */
     setRelationship(
       name: string,
       ressourceIdentifier: Spec.ResourceIdentifierObject | Spec.ResourceIdentifierObject[]
@@ -482,6 +827,7 @@ export namespace JsonApi {
       this.rawData.data.relationships[name] = { data: ressourceIdentifier };
     }
 
+    /** Adds the resource to `included` @hidden */
     includeResource(resource: Spec.ResourceObject) {
       if (!this.rawData.included) {
         this.rawData.included = [];
@@ -489,6 +835,7 @@ export namespace JsonApi {
       this.rawData.included.push(resource);
     }
 
+    /** Adds the resources to `included` @hidden */
     includeResources(resources: Spec.ResourceObject[]) {
       if (!this.rawData.included) {
         this.rawData.included = [];
@@ -496,6 +843,7 @@ export namespace JsonApi {
       this.rawData.included.push(...resources);
     }
 
+    /** The raw JSON:API data @hidden */
     get data(): Spec.ClientJsonApiDocument {
       return this.rawData;
     }

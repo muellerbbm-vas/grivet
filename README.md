@@ -10,13 +10,15 @@ A [JSON:API](https://jsonapi.org) client library written in Typescript with emph
 - `Promise`-based access to resources allowing `async`/`await` style programming
 - Adaptable to various HTTP client implementations
 - Support for sparse fieldsets
-- Uses memoization to avoid repeated network requests
+- Uses memoization to avoid repeated network requests and repeated traversals of the document structure
 - No dependencies (apart from `jest` for testing)
 - Implemented against the JSON:API 1.0 specification.
 
 ## Installation
 
-    npm i @muellerbbm-vas/grivet
+```bash
+npm i @muellerbbm-vas/grivet
+```
 
 ## Basic Usage
 
@@ -32,7 +34,7 @@ const name = author.attributes['name'];
 ```
 
 In the first line, a JSON:API document is constructed from a given URL and a `Context` object
-([see the documentation on contexts](./guides/context.md) for more details). The `Promise` returned by the `fromURL` function is awaited to obtain the `Document` (corresponding to the [JSON:API top level document](https://jsonapi.org/format/#document-structure)). The raw JSON:API document fetched from the server might look something like this:
+([see the documentation on contexts](./guides/context.md) for more details). The `Promise` returned by the `fromURL` function is awaited to obtain the `Document` (corresponding to the [JSON:API top level document](https://jsonapi.org/format/1.0/#document-structure)). The raw JSON:API document fetched from the server might look something like this:
 
 ```http
 GET http://example.com/api HTTP/1.1
@@ -62,10 +64,11 @@ Content-Type: application/vnd.api+json
 ```
 
 The entry point document contains a primary resource with a relationship named "articles" pointing to the _articles_ resources.
-The second line of our short example gets the primary entry point resource and then directly awaits the `relatedResources` property to fetch the _articles_ resources as an array of `Resource` objects (corresponding to [JSON:API resource objects](https://jsonapi.org/format/#document-resource-objects)).
+The second line of our short example gets the primary entry point resource and then directly awaits the `relatedResources` property to fetch the
+_articles_ resources as an array of `Resource` objects (corresponding to [JSON:API resource objects](https://jsonapi.org/format/1.0/#document-resource-objects)).
 As recommended by HATEOAS principles, we do not need to know the URL of the _articles_ resource in advance, we just follow the provided relationship.
 
-Let's assume the server responds with the following compound JSON:API document:
+Let's assume the server responds with the following [compound JSON:API document](https://jsonapi.org/format/1.0/#document-compound-documents):
 
 ```http
 GET http://example.com/articles HTTP/1.1
@@ -108,6 +111,7 @@ The attributes of the _author_ resource can then simply be obtained using its `a
 ## Guides
 
 - [Implementing the `Context` interface](./guides/context.md)
+- [Using Sparse Fieldsets](./guides/sparseFieldsets.md)
 
 ## Examples
 
@@ -122,33 +126,19 @@ for (const relationshipName in articleResource.relationships) {
 }
 ```
 
-### Specifying sparse fieldsets
-
-[Sparse fieldsets](https://jsonapi.org/format/#fetching-sparse-fieldsets) enable a client to request only certain fields (attributes or relationships) to reduce data transfer from server to client.
-When constructing a document, you can optionally provide a mapping from resource type to a list of fields that you are interested in for this type:
-
-```typescript
-const sparseFields = {
-  articles: ['author'],
-  people: ['first-name', 'last-name']
-};
-
-const articleDoc = await JsonApi.Document.fromURL(new URL('http://example.com/articles/1'), context, sparseFields);
-const article = articleDoc.resource;
-const author = await article.relatedResource['author'];
-```
-
-If the server also implements sparse fieldsets, the `article` resource will contain only the _author_ relationship (and no attributes) and the _author_ resource will contain only the _first-name_ and _last-name_ attributes (and no relationships).
-
 ### More examples
 
-See `test/tests.spec.ts` for more examples of how to use this library.
+See [test/tests.spec.ts](./test/tests.spec.ts) for more examples of how to use this library.
+
+## Reference documentation
+
+Have a look at the [library reference](https://muellerbbm-vas.github.io/grivet/docs/index.html) for more details.
 
 ## TODO
 
-- [Sorting](https://jsonapi.org/format/#fetching-sorting)
-- [Pagination](https://jsonapi.org/format/#fetching-pagination)
-- [Filtering](https://jsonapi.org/format/#fetching-filtering)
+- [Sorting](https://jsonapi.org/format/1.0/#fetching-sorting)
+- [Pagination](https://jsonapi.org/format/1.0/#fetching-pagination)
+- [Filtering](https://jsonapi.org/format/1.0/#fetching-filtering)
 
 ## License
 

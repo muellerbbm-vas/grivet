@@ -1,4 +1,4 @@
-/** @see https://github.com/Microsoft/TypeScript/issues/14094#issuecomment-373782604 */
+/* @see https://github.com/Microsoft/TypeScript/issues/14094#issuecomment-373782604 */
 
 /** @hidden */
 export type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };

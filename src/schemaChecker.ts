@@ -1,7 +1,12 @@
+/** Thrown when a malformed JSON:API document is encountered */
 export class SchemaError extends Error {}
 
-/** @hidden */
+/**
+ * Implements some simple schema checks on objects
+ * @hidden
+ */
 export class SchemaChecker {
+  /** Factory function creating a new SchemaChecker */
   static fromData(data: object, name: string) {
     return new SchemaChecker(data, name);
   }
