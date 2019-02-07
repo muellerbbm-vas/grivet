@@ -347,7 +347,7 @@ export namespace JsonApi {
       }
       const result: Links = {};
       for (const linkName in this.rawData.links) {
-        result[linkName] = new Link(this.rawData.links[linkName]);
+        result[linkName] = new Link(this.rawData.links[linkName], this.document.url);
       }
       return result;
     }
@@ -367,7 +367,7 @@ export namespace JsonApi {
       }
       const result: Links = {};
       for (const linkName in this.rawData.meta.links) {
-        result[linkName] = new Link(this.rawData.meta.links[linkName]);
+        result[linkName] = new Link(this.rawData.meta.links[linkName], this.document.url);
       }
       return result;
     }

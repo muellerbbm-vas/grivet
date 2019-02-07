@@ -666,7 +666,7 @@ describe('Construction of resources from existing JSON objects', () => {
   });
 });
 
-describe('A related resource identified via path name only ', () => {
+describe('A link containing path name only ', () => {
   const testApi: TestApi = {
     '/articles/1': {
       data: {
@@ -685,6 +685,14 @@ describe('A related resource identified via path name only ', () => {
               }
             }
           }
+        },
+        links: {
+          self: '/articles/1'
+        },
+        meta: {
+          links: {
+            dummy: '/dummy/1'
+          }
         }
       }
     },
@@ -700,13 +708,23 @@ describe('A related resource identified via path name only ', () => {
     }
   };
 
-  it('is fetched when the relationship is accessed', async () => {
+  it('works when fetching related resources', async () => {
     const article = (await makeDocument('/articles/1', testApi)).resource;
     const author = (await makeDocument('/people/9', testApi)).resource;
     const relatedAuthor = await article.relatedResource['author'];
     expect(relatedAuthor).toEqual(author);
     const relatedAuthor2 = await article.relatedResource['author2'];
     expect(relatedAuthor2).toEqual(author);
+  });
+
+  it('works inside the `links` member', async () => {
+    const article = (await makeDocument('/articles/1', testApi)).resource;
+    expect(article.links['self'].url.href).toEqual('http://example.com/articles/1');
+  });
+
+  it('works inside the `meta.links` member', async () => {
+    const article = (await makeDocument('/articles/1', testApi)).resource;
+    expect(article.metaLinks['dummy'].url.href).toEqual('http://example.com/dummy/1');
   });
 });
 
