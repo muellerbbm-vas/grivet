@@ -1,4 +1,4 @@
-import { SchemaChecker } from '../src/schemaChecker';
+import { SchemaChecker, SchemaError } from '../src/schemaChecker';
 
 describe('The SchemaChecker class', () => {
   it('checks for single objects', () => {
@@ -40,5 +40,11 @@ describe('The SchemaChecker class', () => {
     expect(() => {
       const ch = new SchemaChecker('<!DOCTYPE html>' as any, 'test');
     }).toThrow(/is not an object or array/);
+  });
+
+  it('throws SchemaErrors', () => {
+    expect(() => {
+      throw new SchemaError('test');
+    }).toThrowError(SchemaError);
   });
 });

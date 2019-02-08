@@ -1,5 +1,11 @@
 /** Thrown when a malformed JSON:API document is encountered */
-export class SchemaError extends Error {}
+export class SchemaError extends Error {
+  constructor(message?: string) {
+    super(message);
+    //tslint:disable:no-unsafe-any
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
 
 /**
  * Implements some simple schema checks on objects
