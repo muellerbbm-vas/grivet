@@ -11,7 +11,12 @@ export class SchemaChecker {
     return new SchemaChecker(data, name);
   }
 
-  constructor(private readonly obj: object, private readonly name: string) {}
+  constructor(private readonly obj: object, private readonly name: string) {
+    //tslint:disable:strict-type-predicates
+    if (typeof obj !== 'object') {
+      throw new SchemaError(`${this.name} is not an object or array`);
+    }
+  }
 
   /**
    * check that the given object is a single JSON object

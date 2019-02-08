@@ -35,4 +35,10 @@ describe('The SchemaChecker class', () => {
       ch.allowedMembers(['c', 'd']);
     }).toThrow(/test may only contain one of: c,d/);
   });
+
+  it('complains about non-objects', () => {
+    expect(() => {
+      const ch = new SchemaChecker('<!DOCTYPE html>' as any, 'test');
+    }).toThrow(/is not an object or array/);
+  });
 });
