@@ -4,7 +4,7 @@ type TestApi = { [path: string]: Spec.JsonApiDocument };
 
 class TestContext implements JsonApi.Context {
   constructor(private readonly testApi: TestApi) {}
-  getDocument(url: URL): Promise<Spec.JsonApiDocument> {
+  async getDocument(url: URL): Promise<Spec.JsonApiDocument> {
     if (!(url.pathname in this.testApi)) {
       return Promise.reject(`The path "${url.pathname}" was not found in testApi`);
     }
@@ -12,7 +12,7 @@ class TestContext implements JsonApi.Context {
   }
 }
 
-function makeDocument(path: string, testApi: TestApi): Promise<JsonApi.Document> {
+async function makeDocument(path: string, testApi: TestApi): Promise<JsonApi.Document> {
   return JsonApi.Document.fromURL(new URL(`http://example.com${path}`), new TestContext(testApi));
 }
 
