@@ -745,7 +745,7 @@ export namespace JsonApi {
     /**
      * List of [[Resource]]s referenced by this relationship (if there are many resources).
      * Resource identifiers found in the `data` member of this relationship have priority.
-     * If there is no `data` member, the primary resources found in [[relatedDocument]] is used.
+     * If there is no `data` member, the primary resources found in [[relatedDocument]] are used.
      * @throws [[CardinalityError]] if there is only a singular resource.
      * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
      * @memoized
@@ -769,7 +769,9 @@ export namespace JsonApi {
       if (relatedDoc) {
         return relatedDoc.resources;
       }
-      throw new SchemaError('A relationship object relating to a resource must contain a `links` or `data` member');
+      throw new SchemaError(
+        'A relationship object relating to a resource must contain a `links.related` or `data` member'
+      );
     }
 
     /**
@@ -799,7 +801,9 @@ export namespace JsonApi {
       if (relatedDoc) {
         return relatedDoc.resource;
       }
-      throw new SchemaError('A relationship object relating to a resource must contain a `links` or `data` member');
+      throw new SchemaError(
+        'A relationship object relating to a resource must contain a `links.related` or `data` member'
+      );
     }
   }
 
