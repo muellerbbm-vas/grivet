@@ -4,34 +4,34 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 {{#each releases}}
-  {{#if href}}
-    ## [{{title}}]({{href}}){{#if tag}} - {{isoDate}}{{/if}}
-  {{else}}
-    ## {{title}}{{#if tag}} - {{isoDate}}{{/if}}
-  {{/if}}
+{{#if href}}
+## [{{title}}]({{href}}){{#if tag}} - {{isoDate}}{{/if}}
+{{else}}
+## {{title}}{{#if tag}} - {{isoDate}}{{/if}}
+{{/if}}
 
-  {{#if summary}}
-    {{summary}}
-  {{/if}}
+{{#if summary}}
+{{summary}}
+{{/if}}
 
-  {{#if merges}}
-    ### Merged
+{{! List commits with `Breaking change: ` somewhere in the message }}
+{{#commit-list commits heading='### Breaking Changes' message='breaking:'}}
+- {{subject}} [`{{shorthash}}`]({{href}})
+{{/commit-list}}
 
-    {{#each merges}}
-      - {{{message}}} {{#if href}}[`#{{id}}`]({{href}}){{/if}}
-    {{/each}}
-  {{/if}}
+{{! List commits that add new features, but not those already listed above }}
+{{#commit-list commits heading='### Added' message='feat:' exclude='Breaking change: '}}
+- {{subject}} [`{{shorthash}}`]({{href}})
+{{/commit-list}}
 
-  {{#if fixes}}
-    ### Fixed
+{{! List commits that add new features, but not those already listed above }}
+{{#commit-list commits heading='### Fixed' message='fix:' exclude='Breaking change: '}}
+- {{subject}} [`{{shorthash}}`]({{href}})
+{{/commit-list}}
 
-    {{#each fixes}}
-      - {{{commit.subject}}}{{#each fixes}} {{#if href}}[`#{{id}}`]({{href}}){{/if}}{{/each}}
-    {{/each}}
-  {{/if}}
-
-  {{#commit-list commits heading='### Commits'}}
-    - {{#if breaking}}**Breaking change:** {{/if}}{{{subject}}} {{#if href}}[`{{shorthash}}`]({{href}}){{/if}}
-  {{/commit-list}}
+{{! List commits that add new features, but not those already listed above }}
+{{#commit-list commits heading='### Initial commit' message='Initial commit' exclude='Breaking change: '}}
+- {{subject}} [`{{shorthash}}`]({{href}})
+{{/commit-list}}
 
 {{/each}}

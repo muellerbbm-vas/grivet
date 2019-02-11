@@ -45,10 +45,10 @@
     "template": "changelog-template.hbs",
     "unreleased": true,
     "commitLimit": false,
+    "releaseSummary": true,
     "includeBranch": [
       "master"
-    ],
-    "ignoreCommitPattern": "build:|ci:|docs:|refactor:|style:|test:"
+    ]
   },
   "husky": {
     "hooks": {
