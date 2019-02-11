@@ -23,9 +23,21 @@ export { Spec };
  */
 export namespace JsonApi {
   /** Thrown when there is mismatch between the expected resource count (one or many) and the actual resource count */
-  export class CardinalityError extends Error {}
+  export class CardinalityError extends Error {
+    constructor(message?: string) {
+      super(message);
+      //tslint:disable:no-unsafe-any
+      Object.setPrototypeOf(this, new.target.prototype);
+    }
+  }
   /** Thrown when an explicitly provided id does not match the id received from the server */
-  export class IdMismatchError extends Error {}
+  export class IdMismatchError extends Error {
+    constructor(message?: string) {
+      super(message);
+      //tslint:disable:no-unsafe-any
+      Object.setPrototypeOf(this, new.target.prototype);
+    }
+  }
 
   /**
    * Implement this interface to define how a [[JsonApiDocument]] (the JSON:API raw data) is fetched from a given URL.
@@ -347,7 +359,7 @@ export namespace JsonApi {
       }
       const result: Links = {};
       for (const linkName in this.rawData.links) {
-        result[linkName] = new Link(this.rawData.links[linkName]);
+        result[linkName] = new Link(this.rawData.links[linkName], this.document.url);
       }
       return result;
     }
@@ -367,7 +379,7 @@ export namespace JsonApi {
       }
       const result: Links = {};
       for (const linkName in this.rawData.meta.links) {
-        result[linkName] = new Link(this.rawData.meta.links[linkName]);
+        result[linkName] = new Link(this.rawData.meta.links[linkName], this.document.url);
       }
       return result;
     }

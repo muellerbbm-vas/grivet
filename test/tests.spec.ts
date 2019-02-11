@@ -1,10 +1,11 @@
 import { JsonApi, Spec } from '../src/index';
+import { SchemaError } from '../src/schemaChecker';
 
 type TestApi = { [path: string]: Spec.JsonApiDocument };
 
 class TestContext implements JsonApi.Context {
   constructor(private readonly testApi: TestApi) {}
-  getDocument(url: URL): Promise<Spec.JsonApiDocument> {
+  async getDocument(url: URL): Promise<Spec.JsonApiDocument> {
     if (!(url.pathname in this.testApi)) {
       return Promise.reject(`The path "${url.pathname}" was not found in testApi`);
     }
@@ -12,11 +13,22 @@ class TestContext implements JsonApi.Context {
   }
 }
 
-function makeDocument(path: string, testApi: TestApi): Promise<JsonApi.Document> {
+async function makeDocument(path: string, testApi: TestApi): Promise<JsonApi.Document> {
   return JsonApi.Document.fromURL(new URL(`http://example.com${path}`), new TestContext(testApi));
 }
 
 /* tslint:disable:no-unused-expression */
+
+describe('A Custom Error', () => {
+  it('has the correct prototype', () => {
+    expect(() => {
+      throw new JsonApi.CardinalityError();
+    }).toThrowError(JsonApi.CardinalityError);
+    expect(() => {
+      throw new JsonApi.IdMismatchError();
+    }).toThrowError(JsonApi.IdMismatchError);
+  });
+});
 
 describe('The JSON:API top level structure', () => {
   const testApi: TestApi = {
@@ -348,8 +360,6 @@ describe('A JSON:API compound document', () => {
 
   const documentPath = '/articles/1';
 
-  expect.assertions(4); // one for every mention of 'rejects' below
-
   it('contains included resources as map with "type" and "id" keys', async () => {
     const document = await makeDocument(documentPath, testApi);
     const article = document.resource;
@@ -388,14 +398,14 @@ describe('A JSON:API compound document', () => {
   it('complains when accessing related resources with the wrong cardinality', async () => {
     const document = await makeDocument(documentPath, testApi);
     const article = document.resource;
-    await expect(article.relatedResource['comments']).rejects.toBeDefined(); // /Relationship contains more than one resource/
-    await expect(article.relatedResources['author']).rejects.toBeDefined(); // /Relationship does not contain an array of resources/
+    await expect(article.relatedResource['comments']).rejects.toThrowError(JsonApi.CardinalityError);
+    await expect(article.relatedResources['author']).rejects.toThrowError(JsonApi.CardinalityError);
   });
 
   it('complains about relationships with neither "data" nor "links" members', async () => {
     const brokenArticle = (await makeDocument('/articles/broken', testApi)).resource;
-    await expect(brokenArticle.relatedResource['author']).rejects.toBeDefined();
-    await expect(brokenArticle.relatedResources['author']).rejects.toBeDefined();
+    await expect(brokenArticle.relatedResource['author']).rejects.toThrowError(SchemaError);
+    await expect(brokenArticle.relatedResources['author']).rejects.toThrowError(SchemaError);
   });
 
   it('can link from one included resource to another', async () => {
@@ -437,7 +447,7 @@ describe('A JSON:API compound document', () => {
     expect(() => {
       firstCommentAuthor.attributes['first-name'];
     }).toThrow(/not found/);
-    await expect(firstCommentAuthorRelationship.resources()).rejects.toBeDefined();
+    await expect(firstCommentAuthorRelationship.resources()).rejects.toThrowError(JsonApi.CardinalityError);
   });
 });
 
@@ -666,7 +676,7 @@ describe('Construction of resources from existing JSON objects', () => {
   });
 });
 
-describe('A related resource identified via path name only ', () => {
+describe('A link containing path name only ', () => {
   const testApi: TestApi = {
     '/articles/1': {
       data: {
@@ -685,6 +695,14 @@ describe('A related resource identified via path name only ', () => {
               }
             }
           }
+        },
+        links: {
+          self: '/articles/1'
+        },
+        meta: {
+          links: {
+            dummy: '/dummy/1'
+          }
         }
       }
     },
@@ -700,13 +718,23 @@ describe('A related resource identified via path name only ', () => {
     }
   };
 
-  it('is fetched when the relationship is accessed', async () => {
+  it('works when fetching related resources', async () => {
     const article = (await makeDocument('/articles/1', testApi)).resource;
     const author = (await makeDocument('/people/9', testApi)).resource;
     const relatedAuthor = await article.relatedResource['author'];
     expect(relatedAuthor).toEqual(author);
     const relatedAuthor2 = await article.relatedResource['author2'];
     expect(relatedAuthor2).toEqual(author);
+  });
+
+  it('works inside the `links` member', async () => {
+    const article = (await makeDocument('/articles/1', testApi)).resource;
+    expect(article.links['self'].url.href).toEqual('http://example.com/articles/1');
+  });
+
+  it('works inside the `meta.links` member', async () => {
+    const article = (await makeDocument('/articles/1', testApi)).resource;
+    expect(article.metaLinks['dummy'].url.href).toEqual('http://example.com/dummy/1');
   });
 });
 
