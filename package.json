@@ -47,7 +47,8 @@
     "commitLimit": false,
     "releaseSummary": true,
     "includeBranch": [
-      "master"
+      "master",
+      "develop"
     ]
   },
   "husky": {
