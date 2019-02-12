@@ -20,17 +20,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 {{/commit-list}}
 
 {{! List commits that add new features, but not those already listed above }}
-{{#commit-list commits heading='### Added' message='feat:' exclude='Breaking change: '}}
+{{#commit-list commits heading='### Added / Changed' message='feat:' exclude='breaking:'}}
 - {{subject}} [`{{shorthash}}`]({{href}})
 {{/commit-list}}
 
 {{! List commits that add new features, but not those already listed above }}
-{{#commit-list commits heading='### Fixed' message='fix:' exclude='Breaking change: '}}
+{{#commit-list commits heading='### Fixed' message='fix:' exclude='breaking:'}}
 - {{subject}} [`{{shorthash}}`]({{href}})
 {{/commit-list}}
 
 {{! List commits that add new features, but not those already listed above }}
-{{#commit-list commits heading='### Initial commit' message='Initial commit' exclude='Breaking change: '}}
+{{#commit-list commits heading='### Initial commit' message='Initial commit' exclude='breaking:'}}
 - {{subject}} [`{{shorthash}}`]({{href}})
 {{/commit-list}}
 
