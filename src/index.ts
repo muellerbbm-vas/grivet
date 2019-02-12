@@ -745,7 +745,7 @@ export namespace JsonApi {
     /**
      * List of [[Resource]]s referenced by this relationship (if there are many resources).
      * Resource identifiers found in the `data` member of this relationship have priority.
-     * If there is no `data` member, the primary resources found in [[relatedDocument]] is used.
+     * If there is no `data` member, the primary resources found in [[relatedDocument]] are used.
      * @throws [[CardinalityError]] if there is only a singular resource.
      * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
      * @memoized
@@ -754,22 +754,24 @@ export namespace JsonApi {
     async resources(): Promise<Resource[]> {
       if ('data' in this.rawData) {
         const resourceIdentifiers = this.data;
-        if (resourceIdentifiers !== null && resourceIdentifiers !== undefined && !Array.isArray(resourceIdentifiers)) {
-          throw new CardinalityError(
-            'Relationship does not contain an array of resources. Use the `resource` method instead.'
+        if (resourceIdentifiers !== null && resourceIdentifiers !== undefined) {
+          if (!Array.isArray(resourceIdentifiers)) {
+            throw new CardinalityError(
+              'Relationship does not contain an array of resources. Use the `resource` method instead.'
+            );
+          }
+          return Promise.resolve(
+            resourceIdentifiers.map(rid => new RelatedResource(this.referringDocument, rid.id, rid.type, this.context))
           );
         }
-        return Promise.resolve(
-          (<Spec.ResourceIdentifierObject[]>resourceIdentifiers).map(
-            rid => new RelatedResource(this.referringDocument, rid.id, rid.type, this.context)
-          )
-        );
       }
       const relatedDoc = await this.relatedDocument();
       if (relatedDoc) {
         return relatedDoc.resources;
       }
-      throw new SchemaError('A relationship object relating to a resource must contain a `links` or `data` member');
+      throw new SchemaError(
+        'A relationship object relating to a resource must contain a `links.related` or `data` member'
+      );
     }
 
     /**
@@ -784,25 +786,24 @@ export namespace JsonApi {
     async resource(): Promise<Resource | null | undefined> {
       if ('data' in this.rawData) {
         const resourceIdentifier = this.data;
-        if (resourceIdentifier !== null && resourceIdentifier !== undefined && Array.isArray(resourceIdentifier)) {
-          throw new CardinalityError(
-            'Relationship contains more than one resource. Use the `resources` method instead.'
+        if (resourceIdentifier !== null && resourceIdentifier !== undefined) {
+          if (Array.isArray(resourceIdentifier)) {
+            throw new CardinalityError(
+              'Relationship contains more than one resource. Use the `resources` method instead.'
+            );
+          }
+          return Promise.resolve(
+            new RelatedResource(this.referringDocument, resourceIdentifier.id, resourceIdentifier.type, this.context)
           );
         }
-        return Promise.resolve(
-          new RelatedResource(
-            this.referringDocument,
-            (<Spec.ResourceIdentifierObject>resourceIdentifier).id,
-            (<Spec.ResourceIdentifierObject>resourceIdentifier).type,
-            this.context
-          )
-        );
       }
       const relatedDoc = await this.relatedDocument();
       if (relatedDoc) {
         return relatedDoc.resource;
       }
-      throw new SchemaError('A relationship object relating to a resource must contain a `links` or `data` member');
+      throw new SchemaError(
+        'A relationship object relating to a resource must contain a `links.related` or `data` member'
+      );
     }
   }
 

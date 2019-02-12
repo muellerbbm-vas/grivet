@@ -17,7 +17,7 @@ async function makeDocument(path: string, testApi: TestApi): Promise<JsonApi.Doc
   return JsonApi.Document.fromURL(new URL(`http://example.com${path}`), new TestContext(testApi));
 }
 
-/* tslint:disable:no-unused-expression */
+/* tslint:disable:no-unused-expression,await-promise,no-unsafe-any */
 
 describe('A Custom Error', () => {
   it('has the correct prototype', () => {
@@ -590,8 +590,15 @@ describe('A JSON:API related document', () => {
             }
           },
           comments: {
+            data: null,
             links: {
               related: 'http://example.com/comments'
+            }
+          },
+          review: {
+            data: null,
+            links: {
+              related: 'http://example.com/review/7'
             }
           }
         }
@@ -614,6 +621,12 @@ describe('A JSON:API related document', () => {
           id: '1'
         }
       ]
+    },
+    '/review/7': {
+      data: {
+        type: 'reviews',
+        id: '7'
+      }
     }
   };
 
@@ -635,6 +648,12 @@ describe('A JSON:API related document', () => {
     const comments = commentsDoc.resources;
     const relatedComments = await article.relatedResources['comments'];
     expect(relatedComments).toEqual(comments);
+  });
+
+  it('ignores null data in relationships', async () => {
+    const articleDoc = await JsonApi.Document.fromURL(new URL('http://example.com/articles/1'), context);
+    const review = await articleDoc.resource.relatedResource['review'];
+    expect(review.id).toEqual('7');
   });
 });
 
