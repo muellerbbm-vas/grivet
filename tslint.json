@@ -1,12 +1,15 @@
 {
   "rules": {
+    "unnecessary-else": true,
+    "no-tautology-expression": true,
+    "static-this": true,
     "jsdoc-format": true,
     "array-type": false,
     "await-promise": true,
     "class-name": true,
     "callable-types": true,
     "deprecation": true,
-    "file-name-casing": true,
+    "file-name-casing": [true, "camel-case"],
     "no-unsafe-any": true,
     "no-unnecessary-callback-wrapper": true,
     "no-unnecessary-initializer": true,
