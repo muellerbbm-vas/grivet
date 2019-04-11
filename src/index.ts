@@ -436,6 +436,23 @@ export namespace JsonApi {
      * }
      * ```
      *
+     * This accessor is a shortcut so that you do not have to go through `relationships` manually every time.
+     * Writing
+     *
+     * ```typescript
+     * const author = await article.relatedResources['comments'];
+     * ```
+     *
+     * is equivalent to
+     *
+     * ```typescript
+     * const author = await article.relationships['comments'].resources();
+     * ```
+     *
+     * As this shortcut uses the [[Relationship.resources]] method, it prefers resource linkage (i.e. id/type pairs in `data`)
+     * to `related` links should both be present in the relationship. You can use the [[Relationship.resourcesFromRelatedLink]]
+     * method if you need to fetch related resources via link instead of resource linkage.
+     *
      * As this is only a proxy object, calling `relatedResources` will not yet construct any [[RelatedResource]]
      * instances. Only when accessing a specific related resource (e.g. calling `article.relatedResources['comments']`)
      * are the new resources actually constructed.
@@ -474,6 +491,23 @@ export namespace JsonApi {
      *   reviewer: RelatedResource(...)
      * }
      * ```
+     *
+     * This accessor is a shortcut so that you do not have to go through `relationships` manually every time.
+     * Writing
+     *
+     * ```typescript
+     * const author = await article.relatedResource['author'];
+     * ```
+     *
+     * is equivalent to
+     *
+     * ```typescript
+     * const author = await article.relationships['author'].resource();
+     * ```
+     *
+     * As this shortcut uses the [[Relationship.resource]] method, it prefers resource linkage (i.e. id/type pairs in `data`)
+     * to `related` links should both be present in the relationship. You can use the [[Relationship.resourceFromRelatedLink]]
+     * method if you need to fetch a related resource via link instead of resource linkage.
      *
      * As this is only a proxy object, calling `relatedResource` will not yet construct any [[RelatedResource]]
      * instances. Only when accessing a specific related resource (e.g. calling `article.relatedResource['author']`)
@@ -742,8 +776,8 @@ export namespace JsonApi {
 
     /**
      * List of [[Resource]]s referenced by this relationship (if there are many resources).
-     * Resource identifiers found in the `data` member of this relationship have priority.
-     * If there is no `data` member, the primary resources found in [[relatedDocument]] are used.
+     * Resource linkage (resource identifiers found in the `data` member of this relationship) has priority.
+     * If there is no resource linkage, the primary resources found in [[relatedDocument]] are used.
      * @throws [[CardinalityError]] if there is only a singular resource.
      * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
      * @memoized
@@ -774,8 +808,8 @@ export namespace JsonApi {
 
     /**
      * The one [[Resource]] referenced by this relationship.
-     * The resource identifier found in the `data` member of this relationship has priority.
-     * If there is no `data` member, the primary resource found in [[relatedDocument]] is used.
+     * Resource linkage (the resource identifier found in the `data` member of this relationship) has priority.
+     * If there is no resource linkage, the primary resource found in [[relatedDocument]] is used.
      * @throws [[CardinalityError]] if there are many resources.
      * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
      * @memoized
@@ -802,6 +836,42 @@ export namespace JsonApi {
       throw new SchemaError(
         'A relationship object relating to a resource must contain a `links.related` or `data` member'
       );
+    }
+
+    /**
+     * Works like the [[resources]] method, but prefers the `related` link instead of resource linkage.
+     * If no `related` link is present or if the link does not work, it falls back to the [[resources]] method.
+     * @throws [[CardinalityError]] if there is only a singular resource.
+     * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
+     * @memoized
+     */
+    @memoized()
+    async resourcesFromRelatedLink(): Promise<Resource[]> {
+      try {
+        const relatedDoc = await this.relatedDocument();
+        if (relatedDoc) {
+          return relatedDoc.resources;
+        }
+      } catch (err) {}
+      return this.resources();
+    }
+
+    /**
+     * Works like the [[resource]] method, but prefers the `related` link instead of resource linkage.
+     * If no `related` link is present or if the link does not work, it falls back to the [[resource]] method.
+     * @throws [[CardinalityError]] if there are many resources.
+     * @throws [[SchemaError]] if neither a `links` nor a `data` member is present
+     * @memoized
+     */
+    @memoized()
+    async resourceFromRelatedLink(): Promise<Resource | null | undefined> {
+      try {
+        const relatedDoc = await this.relatedDocument();
+        if (relatedDoc) {
+          return relatedDoc.resource;
+        }
+      } catch (err) {}
+      return this.resource();
     }
   }
 
