@@ -8,8 +8,11 @@ import { SchemaChecker } from './schemaChecker';
  * The type names are chosen to correspond to the language used in the official JSON:API specification.
  */
 export namespace Spec {
+  /* tslint:disable:completed-docs */
+
   /**
    * Runtime checks for basic [[JsonApiDocument]] schema
+   *
    * @throws [[SchemaError]]
    */
   export function checkDocumentSchema(doc: JsonApiDocument) {
@@ -51,8 +54,6 @@ export namespace Spec {
       .singleObject()
       .atLeastOneOf(['links', 'data', 'meta']);
   }
-
-  /* tslint:disable:completed-docs */
 
   /**
    * @see https://jsonapi.org/format/1.0/#document-meta
