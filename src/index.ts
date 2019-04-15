@@ -440,13 +440,13 @@ export namespace JsonApi {
      * Writing
      *
      * ```typescript
-     * const author = await article.relatedResources['comments'];
+     * const comments = await article.relatedResources['comments'];
      * ```
      *
      * is equivalent to
      *
      * ```typescript
-     * const author = await article.relationships['comments'].resources();
+     * const comments = await article.relationships['comments'].resources();
      * ```
      *
      * As this shortcut uses the [[Relationship.resources]] method, it prefers resource linkage (i.e. id/type pairs in `data`)
