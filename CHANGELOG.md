@@ -3,6 +3,12 @@
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v0.0.4](https://github.com/muellerbbm-vas/grivet/compare/v0.0.3...v0.0.4) - 2019-04-15
+
+### Added
+
+- New methods to prefer fetching of related resources via `related` links instead of resource linkage when both a `data` and `links` member are present in a relationship
+
 ## [v0.0.3](https://github.com/muellerbbm-vas/grivet/compare/v0.0.2...v0.0.3) - 2019-02-12
 
 ### Fixed
