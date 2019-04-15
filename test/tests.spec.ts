@@ -3,6 +3,8 @@ import { SchemaError } from '../src/schemaChecker';
 
 type TestApi = { [path: string]: Spec.JsonApiDocument };
 
+/* tslint:disable:no-unused-expression,await-promise,no-unsafe-any,completed-docs */
+
 class TestContext implements JsonApi.Context {
   constructor(private readonly testApi: TestApi) {}
   async getDocument(url: URL): Promise<Spec.JsonApiDocument> {
@@ -16,8 +18,6 @@ class TestContext implements JsonApi.Context {
 async function makeDocument(path: string, testApi: TestApi): Promise<JsonApi.Document> {
   return JsonApi.Document.fromURL(new URL(`http://example.com${path}`), new TestContext(testApi));
 }
-
-/* tslint:disable:no-unused-expression,await-promise,no-unsafe-any */
 
 describe('A Custom Error', () => {
   it('has the correct prototype', () => {
@@ -292,6 +292,12 @@ describe('A JSON:API compound document', () => {
               related: 'http://example.com/articles/1/comments'
             },
             data: [{ type: 'comments', id: '5' }, { type: 'comments', id: '12' }]
+          },
+          test: {
+            data: { id: '11', type: 'tests' }
+          },
+          tests: {
+            data: [{ id: '11', type: 'tests' }, { id: '12', type: 'tests' }]
           }
         }
       },
@@ -449,6 +455,16 @@ describe('A JSON:API compound document', () => {
     }).toThrow(/not found/);
     await expect(firstCommentAuthorRelationship.resources()).rejects.toThrowError(JsonApi.CardinalityError);
   });
+
+  it('complains about cardinality when using the wrong methods', async () => {
+    const document = await makeDocument(documentPath, testApi);
+    await expect(document.resource.relationships['test'].resourcesFromRelatedLink()).rejects.toThrowError(
+      JsonApi.CardinalityError
+    );
+    await expect(document.resource.relationships['tests'].resourceFromRelatedLink()).rejects.toThrowError(
+      JsonApi.CardinalityError
+    );
+  });
 });
 
 describe('A JSON:API compound document with multiple main resources', () => {
@@ -558,6 +574,14 @@ describe('A JSON:API document with no included resources', () => {
           relationships: {
             other: {
               data: { type: 'articles', id: '2' }
+            },
+            test: {
+              data: { type: 'tests', id: '11' },
+              links: { related: 'http://example.com/tests/11' }
+            },
+            tests: {
+              data: [{ type: 'tests', id: '11' }, { type: 'tests', id: '12' }],
+              links: { related: 'http://example.com/tests' }
             }
           }
         }
@@ -573,6 +597,14 @@ describe('A JSON:API document with no included resources', () => {
     const other = await article1.relatedResource['other'];
     expect(() => {
       other.attributes;
+    }).toThrow(/not found in document/);
+    const test = await article1.relationships['test'].resourceFromRelatedLink();
+    expect(() => {
+      test.attributes;
+    }).toThrow(/not found in document/);
+    const tests = await article1.relationships['tests'].resourcesFromRelatedLink();
+    expect(() => {
+      tests[0].attributes;
     }).toThrow(/not found in document/);
   });
 });
@@ -600,6 +632,14 @@ describe('A JSON:API related document', () => {
             links: {
               related: 'http://example.com/review/7'
             }
+          },
+          test: {
+            data: { type: 'tests', id: '11' },
+            links: { related: 'http://example.com/tests/11' }
+          },
+          tests: {
+            data: [{ type: 'tests', id: '11' }, { type: 'tests', id: '12' }],
+            links: { related: 'http://example.com/tests' }
           }
         }
       }
@@ -627,6 +667,33 @@ describe('A JSON:API related document', () => {
         type: 'reviews',
         id: '7'
       }
+    },
+    '/tests/11': {
+      data: {
+        type: 'tests',
+        id: '11',
+        attributes: {
+          a: 1
+        }
+      }
+    },
+    '/tests': {
+      data: [
+        {
+          type: 'tests',
+          id: '11',
+          attributes: {
+            a: 1
+          }
+        },
+        {
+          type: 'tests',
+          id: '12',
+          attributes: {
+            a: 2
+          }
+        }
+      ]
     }
   };
 
@@ -655,10 +722,20 @@ describe('A JSON:API related document', () => {
     const review = await articleDoc.resource.relatedResource['review'];
     expect(review.id).toEqual('7');
   });
+
+  it('can be loaded from a related link instead of linkage', async () => {
+    const articleDoc = await JsonApi.Document.fromURL(new URL('http://example.com/articles/1'), context);
+    const testResource = await articleDoc.resource.relationships['test'].resourceFromRelatedLink();
+    expect(testResource.id).toEqual('11');
+    expect(testResource.attributes).toEqual({ a: 1 });
+    const testResources = await articleDoc.resource.relationships['tests'].resourcesFromRelatedLink();
+    expect(testResources[1].id).toEqual('12');
+    expect(testResources[1].attributes).toEqual({ a: 2 });
+  });
 });
 
 class DummyContext implements JsonApi.Context {
-  getDocument(url: URL): Promise<Spec.JsonApiDocument> {
+  async getDocument(url: URL): Promise<Spec.JsonApiDocument> {
     throw new Error('Method not implemented.');
   }
 }
