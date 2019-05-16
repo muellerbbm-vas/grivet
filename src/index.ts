@@ -143,6 +143,9 @@ export namespace JsonApi {
           'Document does not contain an array of resources. Use the `resource` property instead'
         );
       }
+      if (!('data' in this.rawData)) {
+        return [];
+      }
       return (<Spec.ResourceObject[]>this.rawData.data).map(
         primaryData => new PrimaryResource(primaryData, this, primaryData.type, this.context)
       );
@@ -167,12 +170,15 @@ export namespace JsonApi {
      * @memoized
      */
     @memoized()
-    get resource(): PrimaryResource | null {
+    get resource(): PrimaryResource | null | undefined {
       if (this.hasManyResources) {
         throw new CardinalityError('Document contains an array of resources. Use the `resources` property instead');
       }
       if (this.rawData.data === null) {
         return null;
+      }
+      if (!('data' in this.rawData)) {
+        return undefined;
       }
       const primaryData = <Spec.ResourceObject>this.rawData.data;
       return new PrimaryResource(primaryData, this, primaryData.type, this.context);

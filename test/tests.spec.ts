@@ -75,6 +75,10 @@ describe('The JSON:API top level structure', () => {
           id: '2'
         }
       ]
+    },
+
+    '/noData': {
+      errors: [{ id: '1' }]
     }
   };
 
@@ -159,6 +163,11 @@ describe('The JSON:API top level structure', () => {
     expect(() => {
       document.resource;
     }).toThrow(/Document contains an array of resources/);
+  });
+
+  it('does not have to contain a data member', async () => {
+    const document = await makeDocument('/noData', testApi);
+    expect(document.resource).toBeUndefined();
   });
 });
 
