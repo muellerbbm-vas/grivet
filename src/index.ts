@@ -143,6 +143,9 @@ export namespace JsonApi {
           'Document does not contain an array of resources. Use the `resource` property instead'
         );
       }
+      if (!('data' in this.rawData)) {
+        return [];
+      }
       return (<Spec.ResourceObject[]>this.rawData.data).map(
         primaryData => new PrimaryResource(primaryData, this, primaryData.type, this.context)
       );
@@ -167,12 +170,15 @@ export namespace JsonApi {
      * @memoized
      */
     @memoized()
-    get resource(): PrimaryResource | null {
+    get resource(): PrimaryResource | null | undefined {
       if (this.hasManyResources) {
         throw new CardinalityError('Document contains an array of resources. Use the `resources` property instead');
       }
       if (this.rawData.data === null) {
         return null;
+      }
+      if (!('data' in this.rawData)) {
+        return undefined;
       }
       const primaryData = <Spec.ResourceObject>this.rawData.data;
       return new PrimaryResource(primaryData, this, primaryData.type, this.context);
@@ -440,13 +446,13 @@ export namespace JsonApi {
      * Writing
      *
      * ```typescript
-     * const author = await article.relatedResources['comments'];
+     * const comments = await article.relatedResources['comments'];
      * ```
      *
      * is equivalent to
      *
      * ```typescript
-     * const author = await article.relationships['comments'].resources();
+     * const comments = await article.relationships['comments'].resources();
      * ```
      *
      * As this shortcut uses the [[Relationship.resources]] method, it prefers resource linkage (i.e. id/type pairs in `data`)
@@ -832,6 +838,15 @@ export namespace JsonApi {
       const relatedDoc = await this.relatedDocument();
       if (relatedDoc) {
         return relatedDoc.resource;
+      }
+      if ('data' in this.rawData) {
+        const resourceIdentifier = this.data;
+        if (resourceIdentifier === null) {
+          return null;
+        }
+        if (resourceIdentifier === undefined) {
+          return undefined;
+        }
       }
       throw new SchemaError(
         'A relationship object relating to a resource must contain a `links.related` or `data` member'
