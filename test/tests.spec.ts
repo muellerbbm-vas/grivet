@@ -307,6 +307,12 @@ describe('A JSON:API compound document', () => {
           },
           tests: {
             data: [{ id: '11', type: 'tests' }, { id: '12', type: 'tests' }]
+          },
+          nothingList: {
+            data: []
+          },
+          nothingDetail: {
+            data: null
           }
         }
       },
@@ -473,6 +479,15 @@ describe('A JSON:API compound document', () => {
     await expect(document.resource.relationships['tests'].resourceFromRelatedLink()).rejects.toThrowError(
       JsonApi.CardinalityError
     );
+  });
+
+  it('may contain empty or null resource linkage', async () => {
+    const document = await makeDocument(documentPath, testApi);
+    const article = document.resource;
+    const nothingList = await article.relatedResources['nothingList'];
+    expect(nothingList).toEqual([]);
+    const nothingDetail = await article.relatedResource['nothingDetail'];
+    expect(nothingDetail).toEqual(null);
   });
 });
 

@@ -839,6 +839,15 @@ export namespace JsonApi {
       if (relatedDoc) {
         return relatedDoc.resource;
       }
+      if ('data' in this.rawData) {
+        const resourceIdentifier = this.data;
+        if (resourceIdentifier === null) {
+          return null;
+        }
+        if (resourceIdentifier === undefined) {
+          return undefined;
+        }
+      }
       throw new SchemaError(
         'A relationship object relating to a resource must contain a `links.related` or `data` member'
       );
