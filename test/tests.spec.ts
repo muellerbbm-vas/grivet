@@ -481,7 +481,7 @@ describe('A JSON:API compound document', () => {
     );
   });
 
-  it('empty related data is valid', async () => {
+  it('may contain empty or null resource linkage', async () => {
     const document = await makeDocument(documentPath, testApi);
     const article = document.resource;
     const nothingList = await article.relatedResources['nothingList'];
