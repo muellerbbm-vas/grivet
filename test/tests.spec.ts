@@ -484,7 +484,7 @@ describe('A JSON:API compound document', () => {
   it('empty related data is valid', async () => {
     const document = await makeDocument(documentPath, testApi);
     const article = document.resource;
-    const nothing_list = await article.relatedResources['nothing_list'];
+    const nothingList = await article.relatedResources['nothingList'];
     expect(nothing_list).toEqual([]);
     const nothing_detail = await article.relatedResource['nothing_detail'];
     expect(nothing_detail).toEqual(null);
