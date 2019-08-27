@@ -311,7 +311,7 @@ describe('A JSON:API compound document', () => {
           nothingList: {
             data: []
           },
-          nothing_detail: {
+          nothingDetail: {
             data: null
           }
         }
