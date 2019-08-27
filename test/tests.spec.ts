@@ -308,7 +308,7 @@ describe('A JSON:API compound document', () => {
           tests: {
             data: [{ id: '11', type: 'tests' }, { id: '12', type: 'tests' }]
           },
-          nothing_list: {
+          nothingList: {
             data: []
           },
           nothing_detail: {
