@@ -486,7 +486,7 @@ describe('A JSON:API compound document', () => {
     const article = document.resource;
     const nothingList = await article.relatedResources['nothingList'];
     expect(nothing_list).toEqual([]);
-    const nothing_detail = await article.relatedResource['nothing_detail'];
+    const nothingDetail = await article.relatedResource['nothingDetail'];
     expect(nothing_detail).toEqual(null);
   });
 });
