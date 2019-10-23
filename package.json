@@ -2,7 +2,7 @@
   "name": "@muellerbbm-vas/grivet",
   "description": "A JSON:API client library written in Typescript with emphasis on RESTful traversal of resources according to HATEOAS principles",
   "homepage": "https://github.com/muellerbbm-vas/grivet",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": {
     "name": "Müller-BBM VibroAkustik Systeme GmbH",
     "url": "http://www.muellerbbm-vas.com",
@@ -47,16 +47,16 @@
     }
   },
   "devDependencies": {
-    "@types/jest": "24.0.18",
-    "@types/node": "12.7.2",
-    "husky": "3.0.4",
+    "@types/jest": "24.0.19",
+    "@types/node": "12.11.1",
+    "husky": "3.0.9",
     "jest": "24.9.0",
     "prettier": "1.18.2",
-    "pretty-quick": "1.11.1",
-    "ts-jest": "24.0.2",
-    "tslint": "5.19.0",
+    "pretty-quick": "2.0.0",
+    "ts-jest": "24.1.0",
+    "tslint": "5.20.0",
     "typedoc": "0.15.0",
-    "typescript": "3.5.3"
+    "typescript": "3.6.4"
   },
   "dependencies": {}
 }

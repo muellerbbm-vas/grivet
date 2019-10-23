@@ -238,11 +238,11 @@ export namespace JsonApi {
   export type Links = { [linkName: string]: Link };
 
   /** @hidden */
-  type RelationshipToResource = { [relationshipName: string]: Resource };
+  type RelationshipToResource = { [relationshipName: string]: Promise<Resource> };
   /** @hidden */
-  type RelationshipToResources = { [relationshipName: string]: Resource[] };
+  type RelationshipToResources = { [relationshipName: string]: Promise<Resource[]> };
   /** @hidden */
-  type RelationshipToDocument = { [relationshipName: string]: Document };
+  type RelationshipToDocument = { [relationshipName: string]: Promise<Document> };
 
   /** @hidden */
   class RelatedResourceAccessor<T extends RelationshipToResource> implements ProxyHandler<T> {
