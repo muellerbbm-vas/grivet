@@ -58,5 +58,7 @@
     "typedoc": "0.15.0",
     "typescript": "3.6.4"
   },
-  "dependencies": {}
+  "dependencies": {
+    "proxy-polyfill": "0.3.0"
+  }
 }

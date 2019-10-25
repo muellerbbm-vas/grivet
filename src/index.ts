@@ -1,6 +1,7 @@
 import { Spec } from './jsonapiSpec';
 import { SchemaError } from './schemaChecker';
 import { memoized } from './memoized.decorator';
+import { proxyWrapper } from './proxy';
 
 export { Spec };
 
@@ -464,7 +465,7 @@ export namespace JsonApi {
      * are the new resources actually constructed.
      */
     get relatedResources() {
-      return new Proxy(<RelationshipToResources>{}, new RelatedResourcesAccessor(this));
+      return proxyWrapper(<RelationshipToResources>{}, new RelatedResourcesAccessor(this));
     }
 
     /**
@@ -520,7 +521,7 @@ export namespace JsonApi {
      * is the new resource actually constructed.
      */
     get relatedResource() {
-      return new Proxy(<RelationshipToResource>{}, new RelatedResourceAccessor(this));
+      return proxyWrapper(<RelationshipToResource>{}, new RelatedResourceAccessor(this));
     }
 
     /**
@@ -558,7 +559,7 @@ export namespace JsonApi {
      * new document actually requested from the server.
      */
     get relatedDocuments() {
-      return new Proxy(<RelationshipToDocument>{}, new RelatedDocumentAccessor(this));
+      return proxyWrapper(<RelationshipToDocument>{}, new RelatedDocumentAccessor(this));
     }
   }
 
