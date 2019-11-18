@@ -49,7 +49,7 @@
   "devDependencies": {
     "@types/jest": "24.0.22",
     "@types/node": "12.12.7",
-    "husky": "3.0.9",
+    "husky": "3.1.0",
     "jest": "24.9.0",
     "prettier": "1.19.1",
     "pretty-quick": "2.0.1",
