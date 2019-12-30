@@ -55,7 +55,7 @@
     "pretty-quick": "2.0.1",
     "ts-jest": "24.2.0",
     "tslint": "5.20.1",
-    "typedoc": "0.15.5",
+    "typedoc": "0.15.6",
     "typescript": "3.7.4"
   },
   "dependencies": {}
