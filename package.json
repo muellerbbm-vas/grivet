@@ -1,0 +1,62 @@
+{
+  "name": "@muellerbbm-vas/grivet",
+  "description": "A JSON:API client library written in Typescript with emphasis on RESTful traversal of resources according to HATEOAS principles",
+  "homepage": "https://github.com/muellerbbm-vas/grivet",
+  "version": "0.0.6",
+  "author": {
+    "name": "Müller-BBM VibroAkustik Systeme GmbH",
+    "url": "http://www.muellerbbm-vas.com",
+    "email": "info.de@muellerbbm-vas.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:muellerbbm-vas/grivet.git"
+  },
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/muellerbbm-vas/grivet/blob/master/LICENSE"
+    }
+  ],
+  "keywords": [
+    "JSON:API",
+    "REST",
+    "HATEOAS",
+    "TypeScript",
+    "HTTP"
+  ],
+  "bugs": {
+    "url": "https://github.com/muellerbbm-vas/grivet/issues"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run lint && npm test && npm run docs",
+    "build": "npx tsc",
+    "docs": "npx typedoc --mode file --gitRevision master --readme none --includes ./ --name \"Grivet Reference\" --out ./docs ./src",
+    "watch": "npx tsc -watch",
+    "test": "npx jest test",
+    "lint": "npx tslint -p . -c tslint.json"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged && npm run lint",
+      "pre-push": "npm run test"
+    }
+  },
+  "devDependencies": {
+    "@types/jest": "24.0.19",
+    "@types/node": "12.11.1",
+    "husky": "3.0.9",
+    "jest": "24.9.0",
+    "prettier": "1.18.2",
+    "pretty-quick": "2.0.0",
+    "ts-jest": "24.1.0",
+    "tslint": "5.20.0",
+    "typedoc": "0.15.0",
+    "typescript": "3.6.4"
+  },
+  "dependencies": {}
+}

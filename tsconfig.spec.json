@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "module": "commonjs",
+    "types": ["jest", "node"],
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "noUnusedLocals": false
+  },
+
+  "include": ["**/*.spec.ts", "**/*.d.ts"]
+}

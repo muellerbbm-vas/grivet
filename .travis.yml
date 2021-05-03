@@ -1,0 +1,18 @@
+language: node_js
+node_js:
+  - "lts/*"
+script:
+  - npm run build
+  - npm run lint
+  - npm test
+  - npm run docs
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN # Set in travis-ci.org dashboard
+  target-branch: gh-pages
+  on:
+    branch: master    
+before_deploy:
+  - touch .nojekyll
+  - sed -i '/doc/d' .gitignore

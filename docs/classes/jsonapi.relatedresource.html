@@ -1,0 +1,857 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>RelatedResource | Grivet Reference</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="../assets/js/search.js" data-base="..">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="../index.html" class="title">Grivet Reference</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="../index.html">Globals</a>
+				</li>
+				<li>
+					<a href="../modules/jsonapi.html">JsonApi</a>
+				</li>
+				<li>
+					<a href="jsonapi.relatedresource.html">RelatedResource</a>
+				</li>
+			</ul>
+			<h1>Class RelatedResource</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>A resource contained in the top level <code>included</code> member of a <a href="jsonapi.document.html">Document</a> or linked via href.</p>
+					</div>
+					<p>This resource is initialized lazily on demand when its <a href="jsonapi.relatedresource.html#getdata">getData</a> method is first called.
+						The resource then looks for its id and type (given at construction) in the parent document
+					<code>data</code> and <code>included</code> members to find its raw data.</p>
+					<p>Normally a related resource is obtained via the <a href="jsonapi.resource.html#relatedresource">Resource.relatedResource</a> and <a href="jsonapi.resource.html#relatedresources">Resource.relatedResources</a>
+					accessors or the <a href="jsonapi.relationship.html#resource">Relationship.resource</a> and <a href="jsonapi.relationship.html#resources">Relationship.resources</a> methods, for example:</p>
+					<pre><code class="language-typescript"><span class="hljs-comment">// a document containing one _article_ resource with a related _author_ resource</span>
+<span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> JsonApi.Document.fromURL(<span class="hljs-keyword">new</span> URL(<span class="hljs-string">'http://example.com/article'</span>), context);
+<span class="hljs-keyword">const</span> article = doc.resource;  <span class="hljs-comment">// the primary resource</span>
+<span class="hljs-keyword">const</span> author = <span class="hljs-keyword">await</span> article.relatedResource[<span class="hljs-string">'author'</span>];  <span class="hljs-comment">// the related resource</span></code></pre>
+					<p>Methods and accessors marked as <code>memoized</code> are only executed once per instance (the first time they are called)
+					and return a cached result on subsequent calls.</p>
+				</div>
+			</section>
+			<section class="tsd-panel tsd-hierarchy">
+				<h3>Hierarchy</h3>
+				<ul class="tsd-hierarchy">
+					<li>
+						<a href="jsonapi.resource.html" class="tsd-signature-type">Resource</a>
+						<ul class="tsd-hierarchy">
+							<li>
+								<span class="target">RelatedResource</span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel-group tsd-index-group">
+				<h2>Index</h2>
+				<section class="tsd-panel tsd-index-panel">
+					<div class="tsd-index-content">
+						<section class="tsd-index-section ">
+							<h3>Constructors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite"><a href="jsonapi.relatedresource.html#constructor" class="tsd-kind-icon">constructor</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-inherited">
+							<h3>Properties</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="jsonapi.relatedresource.html#document" class="tsd-kind-icon">document</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#id" class="tsd-kind-icon">id</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#type" class="tsd-kind-icon">type</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-inherited">
+							<h3>Accessors</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#attributes" class="tsd-kind-icon">attributes</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#links" class="tsd-kind-icon">links</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#meta" class="tsd-kind-icon">meta</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#metalinks" class="tsd-kind-icon">meta<wbr>Links</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#rawdata" class="tsd-kind-icon">raw<wbr>Data</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#relateddocuments" class="tsd-kind-icon">related<wbr>Documents</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#relatedresource" class="tsd-kind-icon">related<wbr>Resource</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#relatedresources" class="tsd-kind-icon">related<wbr>Resources</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#relationships" class="tsd-kind-icon">relationships</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited"><a href="jsonapi.relatedresource.html#selflink" class="tsd-kind-icon">self<wbr>Link</a></li>
+							</ul>
+						</section>
+						<section class="tsd-index-section tsd-is-private-protected">
+							<h3>Methods</h3>
+							<ul class="tsd-index-list">
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected"><a href="jsonapi.relatedresource.html#getdata" class="tsd-kind-icon">get<wbr>Data</a></li>
+							</ul>
+						</section>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group ">
+				<h2>Constructors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
+					<a name="constructor" class="tsd-anchor"></a>
+					<h3>constructor</h3>
+					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Related<wbr>Resource<span class="tsd-signature-symbol">(</span>document<span class="tsd-signature-symbol">: </span><a href="jsonapi.document.html" class="tsd-signature-type">Document</a>, id<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, resourceType<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, context<span class="tsd-signature-symbol">: </span><a href="../interfaces/jsonapi.context.html" class="tsd-signature-type">Context</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="jsonapi.relatedresource.html" class="tsd-signature-type">RelatedResource</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Overrides <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#constructor">constructor</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L631">index.ts:631</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Directly construct a related document. It will be lazily initialized from <code>document</code> on first use,
+									so we need to provide an id and a type here so that the resource can find itself in <code>document</code>.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p><a href="jsonapi.idmismatcherror.html">IdMismatchError</a> when <code>id</code> was not found in the given <code>document</code></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>document: <a href="jsonapi.document.html" class="tsd-signature-type">Document</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The parent document that contains this related resource</p>
+										</div>
+									</div>
+								</li>
+								<li>
+									<h5>id: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The id of this resource</p>
+										</div>
+									</div>
+								</li>
+								<li>
+									<h5>resourceType: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The type of this resource</p>
+										</div>
+									</div>
+								</li>
+								<li>
+									<h5>context: <a href="../interfaces/jsonapi.context.html" class="tsd-signature-type">Context</a></h5>
+									<div class="tsd-comment tsd-typography">
+										<div class="lead">
+											<p>The context to use to fetch related documents</p>
+										</div>
+									</div>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="jsonapi.relatedresource.html" class="tsd-signature-type">RelatedResource</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
+				<h2>Properties</h2>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+					<a name="document" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> document</h3>
+					<div class="tsd-signature tsd-kind-icon">document<span class="tsd-signature-symbol">:</span> <a href="jsonapi.document.html" class="tsd-signature-type">Document</a></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#document">document</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L310">index.ts:310</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The parent document that contains this resource</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="id" class="tsd-anchor"></a>
+					<h3>id</h3>
+					<div class="tsd-signature tsd-kind-icon">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#id">id</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L311">index.ts:311</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The id of this resource</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+					<a name="type" class="tsd-anchor"></a>
+					<h3>type</h3>
+					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#type">type</a></p>
+						<ul>
+							<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L312">index.ts:312</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The resource type</p>
+						</div>
+					</div>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
+				<h2>Accessors</h2>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="attributes" class="tsd-anchor"></a>
+					<h3>attributes</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> attributes<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/spec.html#attributesobject" class="tsd-signature-type">AttributesObject</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#attributes">attributes</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L330">index.ts:330</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Object containing all <a href="https://jsonapi.org/format/1.0/#document-resource-object-attributes">attributes</a> of this resource</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/spec.html#attributesobject" class="tsd-signature-type">AttributesObject</a>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-type">undefined</span>
+							</h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="links" class="tsd-anchor"></a>
+					<h3>links</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> links<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/jsonapi.html#links" class="tsd-signature-type">Links</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#links">links</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L361">index.ts:361</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Object containing all <a href="jsonapi.link.html">Link</a>s defined by this resource</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://jsonapi.org/format/1.0/#document-links">https://jsonapi.org/format/1.0/#document-links</a></p>
+									</dd>
+									<dt>memoized</dt>
+									<dd></dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/jsonapi.html#links" class="tsd-signature-type">Links</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="meta" class="tsd-anchor"></a>
+					<h3>meta</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> meta<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/spec.html#metaobject" class="tsd-signature-type">MetaObject</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#meta">meta</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L397">index.ts:397</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Object containing all <a href="https://jsonapi.org/format/1.0/#document-meta">meta data</a> of this resource</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>memoized</dt>
+									<dd></dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/spec.html#metaobject" class="tsd-signature-type">MetaObject</a>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-type">undefined</span>
+							</h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="metalinks" class="tsd-anchor"></a>
+					<h3>meta<wbr>Links</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> metaLinks<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/jsonapi.html#links" class="tsd-signature-type">Links</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#metalinks">metaLinks</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L378">index.ts:378</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Object containing all entries inside <code>links</code> of <code>meta</code> interpreted as
+									JSON:API Link (either string or link object)</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>memoized</dt>
+									<dd></dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/jsonapi.html#links" class="tsd-signature-type">Links</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="rawdata" class="tsd-anchor"></a>
+					<h3>raw<wbr>Data</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> rawData<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/spec.html#resourceobject" class="tsd-signature-type">ResourceObject</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#rawdata">rawData</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L323">index.ts:323</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>The raw JSON:API data of this resource</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>memoized</dt>
+									<dd></dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/spec.html#resourceobject" class="tsd-signature-type">ResourceObject</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="relateddocuments" class="tsd-anchor"></a>
+					<h3>related<wbr>Documents</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> relatedDocuments<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#relateddocuments">relatedDocuments</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L560">index.ts:560</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Proxy providing all <a href="jsonapi.document.html">Document</a>s reachable via <code>related</code> links in relationships.
+									For example, for this JSON:API document</p>
+								</div>
+								<pre><code class="language-json">{
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"type"</span>: <span class="hljs-string">"articles"</span>,
+    <span class="hljs-attr">"id"</span>: <span class="hljs-string">"1"</span>,
+    <span class="hljs-attr">"relationships"</span>: {
+      <span class="hljs-attr">"author"</span>: {
+        <span class="hljs-attr">"links"</span>: {<span class="hljs-attr">"related"</span>: <span class="hljs-string">"http://example.com/people/1"</span>}
+      },
+      <span class="hljs-attr">"reviewer"</span>: {
+        <span class="hljs-attr">"links"</span>: {<span class="hljs-attr">"related"</span>: <span class="hljs-string">"http://example.com/people/12"</span>}
+      }
+    }
+  }
+}</code></pre>
+								<p>calling <code>relatedDocuments</code> on the primary <em>articles</em> resource will give you access to the following data:</p>
+								<pre><code class="language-typescript">{
+  author: Document(...),
+  reviewer: Document(...)
+}</code></pre>
+								<p>As this is only a proxy object, calling <code>relatedDocuments</code> does not yet fetch any related documents.
+									Only when accessing a specific related document (e.g. calling <code>article.relatedDocuments[&#39;author&#39;]</code>) is the
+								new document actually requested from the server.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
+							<ul class="tsd-parameters">
+								<li class="tsd-parameter-index-signature">
+									<h5><span class="tsd-signature-symbol">[</span>relationshipName: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="jsonapi.document.html" class="tsd-signature-type">Document</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="relatedresource" class="tsd-anchor"></a>
+					<h3>related<wbr>Resource</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> relatedResource<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#relatedresource">relatedResource</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L522">index.ts:522</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Proxy providing all singular <a href="jsonapi.resource.html">Resource</a>s reachable via relationships from this resource.
+									For example, for this JSON:API document</p>
+								</div>
+								<pre><code class="language-json">{
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"type"</span>: <span class="hljs-string">"articles"</span>,
+    <span class="hljs-attr">"id"</span>: <span class="hljs-string">"1"</span>,
+    <span class="hljs-attr">"relationships"</span>: {
+      <span class="hljs-attr">"author"</span>: {
+        <span class="hljs-attr">"data"</span>: {<span class="hljs-attr">"type"</span>:<span class="hljs-string">"people"</span>, <span class="hljs-attr">"id"</span>:<span class="hljs-string">"1"</span>}
+      },
+      <span class="hljs-attr">"reviewer"</span>: {
+        <span class="hljs-attr">"data"</span>: {<span class="hljs-attr">"type"</span>:<span class="hljs-string">"people"</span>, <span class="hljs-attr">"id"</span>:<span class="hljs-string">"12"</span>}
+      }
+    }
+  },
+  <span class="hljs-attr">"included"</span>: [...]
+}</code></pre>
+								<p>calling <code>relatedResource</code> on the primary <em>articles</em> resource will give you access to the following data:</p>
+								<pre><code class="language-typescript">{
+  author: RelatedResource(...),
+  reviewer: RelatedResource(...)
+}</code></pre>
+								<p>This accessor is a shortcut so that you do not have to go through <code>relationships</code> manually every time.
+								Writing</p>
+								<pre><code class="language-typescript"><span class="hljs-keyword">const</span> author = <span class="hljs-keyword">await</span> article.relatedResource[<span class="hljs-string">'author'</span>];</code></pre>
+								<p>is equivalent to</p>
+								<pre><code class="language-typescript"><span class="hljs-keyword">const</span> author = <span class="hljs-keyword">await</span> article.relationships[<span class="hljs-string">'author'</span>].resource();</code></pre>
+								<p>As this shortcut uses the <a href="jsonapi.relationship.html#resource">Relationship.resource</a> method, it prefers resource linkage (i.e. id/type pairs in <code>data</code>)
+									to <code>related</code> links should both be present in the relationship. You can use the <a href="jsonapi.relationship.html#resourcefromrelatedlink">Relationship.resourceFromRelatedLink</a>
+								method if you need to fetch a related resource via link instead of resource linkage.</p>
+								<p>As this is only a proxy object, calling <code>relatedResource</code> will not yet construct any <a href="jsonapi.relatedresource.html">RelatedResource</a>
+									instances. Only when accessing a specific related resource (e.g. calling <code>article.relatedResource[&#39;author&#39;]</code>)
+								is the new resource actually constructed.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
+							<ul class="tsd-parameters">
+								<li class="tsd-parameter-index-signature">
+									<h5><span class="tsd-signature-symbol">[</span>relationshipName: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="jsonapi.resource.html" class="tsd-signature-type">Resource</a><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="relatedresources" class="tsd-anchor"></a>
+					<h3>related<wbr>Resources</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> relatedResources<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">object</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#relatedresources">relatedResources</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L466">index.ts:466</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Proxy providing all multiple <a href="jsonapi.resource.html">Resource</a>s reachable via relationships from this resource.
+									For example, for this JSON:API document</p>
+								</div>
+								<pre><code class="language-json">{
+  <span class="hljs-attr">"data"</span>: {
+    <span class="hljs-attr">"type"</span>: <span class="hljs-string">"articles"</span>,
+    <span class="hljs-attr">"id"</span>: <span class="hljs-string">"1"</span>,
+    <span class="hljs-attr">"relationships"</span>: {
+      <span class="hljs-attr">"comments"</span>: {
+        <span class="hljs-attr">"data"</span>: [{<span class="hljs-attr">"type"</span>:<span class="hljs-string">"comments"</span>, <span class="hljs-attr">"id"</span>:<span class="hljs-string">"1"</span>}, {<span class="hljs-attr">"type"</span>:<span class="hljs-string">"comments"</span>, <span class="hljs-attr">"id"</span>:<span class="hljs-string">"2"</span>}]
+      },
+      <span class="hljs-attr">"ratings"</span>: {
+        <span class="hljs-attr">"data"</span>: [{<span class="hljs-attr">"type"</span>:<span class="hljs-string">"ratings"</span>, <span class="hljs-attr">"id"</span>:<span class="hljs-string">"1"</span>}, {<span class="hljs-attr">"type"</span>:<span class="hljs-string">"ratings"</span>, <span class="hljs-attr">"id"</span>:<span class="hljs-string">"2"</span>}]
+      }
+    }
+  },
+  <span class="hljs-attr">"included"</span>: [...]
+}</code></pre>
+								<p>calling <code>relatedResources</code> on the primary <em>articles</em> resource will give you access to the following data:</p>
+								<pre><code class="language-typescript">{
+  comments: [
+    RelatedResource(...),
+    RelatedResource(...)
+  ],
+  ratings: [
+    RelatedResource(...),
+    RelatedResource(...)
+  ]
+}</code></pre>
+								<p>This accessor is a shortcut so that you do not have to go through <code>relationships</code> manually every time.
+								Writing</p>
+								<pre><code class="language-typescript"><span class="hljs-keyword">const</span> comments = <span class="hljs-keyword">await</span> article.relatedResources[<span class="hljs-string">'comments'</span>];</code></pre>
+								<p>is equivalent to</p>
+								<pre><code class="language-typescript"><span class="hljs-keyword">const</span> comments = <span class="hljs-keyword">await</span> article.relationships[<span class="hljs-string">'comments'</span>].resources();</code></pre>
+								<p>As this shortcut uses the <a href="jsonapi.relationship.html#resources">Relationship.resources</a> method, it prefers resource linkage (i.e. id/type pairs in <code>data</code>)
+									to <code>related</code> links should both be present in the relationship. You can use the <a href="jsonapi.relationship.html#resourcesfromrelatedlink">Relationship.resourcesFromRelatedLink</a>
+								method if you need to fetch related resources via link instead of resource linkage.</p>
+								<p>As this is only a proxy object, calling <code>relatedResources</code> will not yet construct any <a href="jsonapi.relatedresource.html">RelatedResource</a>
+									instances. Only when accessing a specific related resource (e.g. calling <code>article.relatedResources[&#39;comments&#39;]</code>)
+								are the new resources actually constructed.</p>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">object</span></h4>
+							<ul class="tsd-parameters">
+								<li class="tsd-parameter-index-signature">
+									<h5><span class="tsd-signature-symbol">[</span>relationshipName: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">]: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="jsonapi.resource.html" class="tsd-signature-type">Resource</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h5>
+								</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="relationships" class="tsd-anchor"></a>
+					<h3>relationships</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> relationships<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/jsonapi.html#relationships" class="tsd-signature-type">Relationships</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#relationships">relationships</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L340">index.ts:340</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Object containing all <a href="jsonapi.relationship.html">Relationship</a>s defined by this resource</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>see</dt>
+									<dd><p><a href="https://jsonapi.org/format/1.0/#document-resource-object-relationships">https://jsonapi.org/format/1.0/#document-resource-object-relationships</a></p>
+									</dd>
+									<dt>memoized</dt>
+									<dd></dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/jsonapi.html#relationships" class="tsd-signature-type">Relationships</a></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+					<a name="selflink" class="tsd-anchor"></a>
+					<h3>self<wbr>Link</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> selfLink<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="jsonapi.link.html" class="tsd-signature-type">Link</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Inherited from <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#selflink">selfLink</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L404">index.ts:404</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Self-link defined in the <code>links</code> member</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="jsonapi.link.html" class="tsd-signature-type">Link</a>
+								<span class="tsd-signature-symbol"> | </span>
+								<span class="tsd-signature-type">undefined</span>
+							</h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section class="tsd-panel-group tsd-member-group tsd-is-private-protected">
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+					<a name="getdata" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> get<wbr>Data</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Data<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/spec.html#resourceobject" class="tsd-signature-type">ResourceObject</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Overrides <a href="jsonapi.resource.html">Resource</a>.<a href="jsonapi.resource.html#getdata">getData</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/muellerbbm-vas/grivet/blob/master/src/index.ts#L651">index.ts:651</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Looks up the matching resource in the parent <a href="jsonapi.document.html">Document</a>. All primary resources (those in the <code>data</code> member)
+									and all included resources (those in the <code>included</code> member) are searched.</p>
+								</div>
+								<dl class="tsd-comment-tags">
+									<dt>throws</dt>
+									<dd><p><a href="jsonapi.idmismatcherror.html">IdMismatchError</a> if the resource is not found or found multiple times</p>
+									</dd>
+									<dt>throws</dt>
+									<dd><p><a href="schemaerror.html">SchemaError</a> when <code>rawData</code> does not look like a <a href="https://jsonapi.org/format/1.0/#document-resource-objects">JSON:API resource object</a></p>
+									</dd>
+								</dl>
+							</div>
+							<h4 class="tsd-returns-title">Returns <a href="../modules/spec.html#resourceobject" class="tsd-signature-type">ResourceObject</a></h4>
+						</li>
+					</ul>
+				</section>
+			</section>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="../index.html"><em>Globals</em></a>
+					</li>
+					<li class="current tsd-kind-module">
+						<a href="../modules/jsonapi.html">Json<wbr>Api</a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="../modules/spec.html">Spec</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="jsonapi.cardinalityerror.html" class="tsd-kind-icon">Cardinality<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="jsonapi.document.html" class="tsd-kind-icon">Document</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="jsonapi.idmismatcherror.html" class="tsd-kind-icon">Id<wbr>Mismatch<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="jsonapi.link.html" class="tsd-kind-icon">Link</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="jsonapi.primaryresource.html" class="tsd-kind-icon">Primary<wbr>Resource</a>
+					</li>
+				</ul>
+				<ul class="current">
+					<li class="current tsd-kind-class tsd-parent-kind-module">
+						<a href="jsonapi.relatedresource.html" class="tsd-kind-icon">Related<wbr>Resource</a>
+						<ul>
+							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-overwrite">
+								<a href="jsonapi.relatedresource.html#constructor" class="tsd-kind-icon">constructor</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
+								<a href="jsonapi.relatedresource.html#document" class="tsd-kind-icon">document</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#id" class="tsd-kind-icon">id</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#type" class="tsd-kind-icon">type</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#attributes" class="tsd-kind-icon">attributes</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#links" class="tsd-kind-icon">links</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#meta" class="tsd-kind-icon">meta</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#metalinks" class="tsd-kind-icon">meta<wbr>Links</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#rawdata" class="tsd-kind-icon">raw<wbr>Data</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#relateddocuments" class="tsd-kind-icon">related<wbr>Documents</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#relatedresource" class="tsd-kind-icon">related<wbr>Resource</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#relatedresources" class="tsd-kind-icon">related<wbr>Resources</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#relationships" class="tsd-kind-icon">relationships</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class tsd-is-inherited">
+								<a href="jsonapi.relatedresource.html#selflink" class="tsd-kind-icon">self<wbr>Link</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite tsd-is-protected">
+								<a href="jsonapi.relatedresource.html#getdata" class="tsd-kind-icon">get<wbr>Data</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<ul class="after-current">
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="jsonapi.relationship.html" class="tsd-kind-icon">Relationship</a>
+					</li>
+					<li class=" tsd-kind-class tsd-parent-kind-module">
+						<a href="jsonapi.resource.html" class="tsd-kind-icon">Resource</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-parent-kind-module">
+						<a href="../interfaces/jsonapi.context.html" class="tsd-kind-icon">Context</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/jsonapi.html#fieldnames" class="tsd-kind-icon">Field<wbr>Names</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/jsonapi.html#includedresourcesmap" class="tsd-kind-icon">Included<wbr>Resources<wbr>Map</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/jsonapi.html#links" class="tsd-kind-icon">Links</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/jsonapi.html#relationships" class="tsd-kind-icon">Relationships</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+						<a href="../modules/jsonapi.html#sparsefields" class="tsd-kind-icon">Sparse<wbr>Fields</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+				<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="../assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="../assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>
