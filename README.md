@@ -1,6 +1,6 @@
 # Grivet
 
-[![Build Status](https://travis-ci.org/muellerbbm-vas/grivet.svg?branch=master)](https://travis-ci.org/muellerbbm-vas/grivet) [![NPM](https://img.shields.io/npm/v/@muellerbbm-vas/grivet.svg)](https://www.npmjs.com/package/@muellerbbm-vas/grivet) ![Dependencies](https://david-dm.org/muellerbbm-vas/grivet.svg)
+[![Node.js CI](https://github.com/muellerbbm-vas/grivet/actions/workflows/node.js.yml/badge.svg)](https://github.com/muellerbbm-vas/grivet/actions/workflows/node.js.yml) [![NPM](https://img.shields.io/npm/v/@muellerbbm-vas/grivet.svg)](https://www.npmjs.com/package/@muellerbbm-vas/grivet)
 
 A [JSON:API](https://jsonapi.org) client library written in Typescript with emphasis on RESTful traversal of resources according to [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS) principles.
 
