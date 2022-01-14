@@ -32,6 +32,7 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run docs
+      - run: sed -i '/doc/d' .gitignore
       - name: Deploy docs to GitHub pages
         uses: JamesIves/github-pages-deploy-action@v4.2.2
         with:
