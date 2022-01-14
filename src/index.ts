@@ -57,237 +57,6 @@ export namespace JsonApi {
   export type SparseFields = { [resourceType: string]: FieldNames };
 
   /**
-   * Holds an `application/vnd.api+json` [document](https://jsonapi.org/format/1.0/#document-top-level) and
-   * provides methods to access the resources in that document.
-   *
-   * This is the main class that acts as an entry point to traverse to other resources.
-   * Use the static [[fromURL]] method to fetch and construct a [[Document]] from a given URL.
-   *
-   * Methods and accessors marked as `memoized` are only executed once per instance (the first time they are called)
-   * and return a cached result on subsequent calls.
-   *
-   * @see https://jsonapi.org/format/1.0/#document-top-level
-   */
-  export class Document {
-    /**
-     * Fetch JSON:API data from the given URL and construct a [[Document]] from it.
-     *
-     * ### Simplest example
-     *
-     * Fetching a document from a server:
-     * ```typescript
-     * const articleDoc = await JsonApi.Document.fromURL(new URL('http://example.com/article/1'), context);
-     * const article = articleDoc.resource;
-     * ```
-     * [[include:guides/sparseFieldsets.md]]
-     *
-     * @param context Context that will provide the JSON:API data, normally by fetching it from a server
-     * @param sparseFields Only these fields (per type) are requested from the server
-     */
-    static async fromURL(url: URL, context: Context, sparseFields?: SparseFields): Promise<Document> {
-      for (const resourceType in sparseFields) {
-        url.searchParams.append(`fields[${resourceType}]`, sparseFields[resourceType].join(','));
-      }
-      const rawData = await context.getDocument(url);
-      return new Document(rawData, context, url, sparseFields);
-    }
-
-    /**
-     * Directly construct a [[Document]]. Does not fetch any data from a server.
-     * @param rawData The raw JSON:API data describing the document
-     * @param context The context to use to fetch related documents (not used during the initial construction)
-     * @param url An optional URL can be provided to indicate where the raw data came from
-     * @param sparseFields An object listing [sparse fieldsets](https://jsonapi.org/format/1.0/#fetching-sparse-fieldsets) for subsequent fetch operations
-     * @throws [[SchemaError]] when the given rawData does not look like a JSON:API document
-     */
-    constructor(
-      readonly rawData: Spec.JsonApiDocument,
-      private readonly context: Context,
-      public readonly url?: URL,
-      public readonly sparseFields?: SparseFields
-    ) {
-      Spec.checkDocumentSchema(rawData);
-    }
-
-    /**
-     * `true` if this document's primary data is an array of resources and not just a single resource
-     * @memoized
-     */
-    @memoized()
-    get hasManyResources(): boolean {
-      return Array.isArray(this.rawData.data);
-    }
-
-    /**
-     * Array of the primary [[Resource]]s in this document. For example the JSON:API document
-     *
-     * ```json
-     * {
-     *   "data": [{
-     *     "type": "articles",
-     *     "id": "1"
-     *   }]
-     * }
-     * ```
-     *
-     * would have a primary resource array of length 1 with one element with type "articles" and id "1".
-     *
-     * @returns Empty array when no primary resources are contained in the document
-     * @throws [[CardinalityError]] if the document instead only contains a singular resource.
-     * @memoized
-     */
-    @memoized()
-    get resources(): PrimaryResource[] {
-      if (!this.hasManyResources) {
-        throw new CardinalityError(
-          'Document does not contain an array of resources. Use the `resource` property instead'
-        );
-      }
-      if (!('data' in this.rawData)) {
-        return [];
-      }
-      return (<Spec.ResourceObject[]>this.rawData.data).map(
-        primaryData => new PrimaryResource(primaryData, this, primaryData.type, this.context)
-      );
-    }
-
-    /**
-     * The primary [[Resource]] in this document. For example the JSON:API document
-     *
-     * ```json
-     * {
-     *   "data": {
-     *     "type": "articles",
-     *     "id": "1"
-     *   }
-     * }
-     * ```
-     *
-     * would have a primary resource with type "articles" and id "1".
-     *
-     * @returns Null if the primary data consists of the value `null`
-     * @throws [[CardinalityError]] if the document instead contains an array of resources.
-     * @memoized
-     */
-    @memoized()
-    get resource(): PrimaryResource | null | undefined {
-      if (this.hasManyResources) {
-        throw new CardinalityError('Document contains an array of resources. Use the `resources` property instead');
-      }
-      if (this.rawData.data === null) {
-        return null;
-      }
-      if (!('data' in this.rawData)) {
-        return undefined;
-      }
-      const primaryData = <Spec.ResourceObject>this.rawData.data;
-      return new PrimaryResource(primaryData, this, primaryData.type, this.context);
-    }
-
-    /**
-     * Map from type and id to [[RelatedResource]] for all resources under the top level `included` member.
-     * For example for the JSON:API document
-     *
-     * ```json
-     * {
-     *   "data": null,
-     *   "included": [
-     *      {"type": "articles", "id": "1"},
-     *      {"type": "articles", "id": "2"},
-     *      {"type": "people", "id": "5"}
-     *    ]
-     * }
-     * ```
-     * calling `includedResources` would produce
-     * ```typescript
-     * {
-     *   articles: {
-     *     '1': RelatedResource(...),
-     *     '2': RelatedResource(...),
-     *   },
-     *   people: {
-     *     '5': RelatedResource(...)
-     *   }
-     * }
-     * ```
-     * @memoized
-     */
-    @memoized()
-    get includedResources(): IncludedResourcesMap {
-      const res: IncludedResourcesMap = {};
-      for (const includedResource of this.rawData.included || []) {
-        if (!(includedResource.type in res)) {
-          res[includedResource.type] = {};
-        }
-        res[includedResource.type][includedResource.id] = new RelatedResource(
-          this,
-          includedResource.id,
-          includedResource.type,
-          this.context
-        );
-      }
-      return res;
-    }
-  }
-
-  /** Collection of [[RelatedResource]]s included in a compound document, organized by type and id */
-  export type IncludedResourcesMap = { [type: string]: { [id: string]: RelatedResource } };
-  /** Mapping from relationship name to [[Relationship]] */
-  export type Relationships = { [relationshipName: string]: Relationship };
-  /** Mapping from link name to [[Link]] */
-  export type Links = { [linkName: string]: Link };
-
-  /** @hidden */
-  type RelationshipToResource = { [relationshipName: string]: Promise<Resource> };
-  /** @hidden */
-  type RelationshipToResources = { [relationshipName: string]: Promise<Resource[]> };
-  /** @hidden */
-  type RelationshipToDocument = { [relationshipName: string]: Promise<Document> };
-
-  /** @hidden */
-  class RelatedResourceAccessor<T extends RelationshipToResource> implements ProxyHandler<T> {
-    constructor(private readonly parent: Resource) {}
-    /**
-     * Provide access to parent related resource
-     * @hidden
-     */
-    async get(target: T, relationshipName: string, receiver: any): Promise<Resource | null | undefined> {
-      if (relationshipName in this.parent.relationships) {
-        return this.parent.relationships[relationshipName].resource();
-      }
-    }
-  }
-
-  /** @hidden */
-  class RelatedResourcesAccessor<T extends RelationshipToResources> implements ProxyHandler<T> {
-    constructor(private readonly parent: Resource) {}
-    /**
-     * Provide access to parent related resources
-     * @hidden
-     */
-    async get(target: T, relationshipName: string, receiver: any): Promise<Resource[]> {
-      if (relationshipName in this.parent.relationships) {
-        return this.parent.relationships[relationshipName].resources();
-      }
-      return [];
-    }
-  }
-
-  /** @hidden */
-  class RelatedDocumentAccessor<T extends RelationshipToDocument> implements ProxyHandler<T> {
-    constructor(private readonly parent: Resource) {}
-    /**
-     * Provide access to parent related document
-     * @hidden
-     */
-    async get(target: T, relationshipName: string, receiver: any): Promise<Document | undefined> {
-      if (relationshipName in this.parent.relationships) {
-        return this.parent.relationships[relationshipName].relatedDocument();
-      }
-    }
-  }
-
-  /**
    * This class represents a [JSON:API resource object](https://jsonapi.org/format/1.0/#document-resource-objects)
    * and is used as base class for [[PrimaryResource]]s and [[RelatedResource]]s.
    *
@@ -605,6 +374,237 @@ export namespace JsonApi {
 
     protected getData(): Spec.ResourceObject {
       return this.pRawData;
+    }
+  }
+
+  /**
+   * Holds an `application/vnd.api+json` [document](https://jsonapi.org/format/1.0/#document-top-level) and
+   * provides methods to access the resources in that document.
+   *
+   * This is the main class that acts as an entry point to traverse to other resources.
+   * Use the static [[fromURL]] method to fetch and construct a [[Document]] from a given URL.
+   *
+   * Methods and accessors marked as `memoized` are only executed once per instance (the first time they are called)
+   * and return a cached result on subsequent calls.
+   *
+   * @see https://jsonapi.org/format/1.0/#document-top-level
+   */
+  export class Document {
+    /**
+     * Fetch JSON:API data from the given URL and construct a [[Document]] from it.
+     *
+     * ### Simplest example
+     *
+     * Fetching a document from a server:
+     * ```typescript
+     * const articleDoc = await JsonApi.Document.fromURL(new URL('http://example.com/article/1'), context);
+     * const article = articleDoc.resource;
+     * ```
+     * [[include:guides/sparseFieldsets.md]]
+     *
+     * @param context Context that will provide the JSON:API data, normally by fetching it from a server
+     * @param sparseFields Only these fields (per type) are requested from the server
+     */
+    static async fromURL(url: URL, context: Context, sparseFields?: SparseFields): Promise<Document> {
+      for (const resourceType in sparseFields) {
+        url.searchParams.append(`fields[${resourceType}]`, sparseFields[resourceType].join(','));
+      }
+      const rawData = await context.getDocument(url);
+      return new Document(rawData, context, url, sparseFields);
+    }
+
+    /**
+     * Directly construct a [[Document]]. Does not fetch any data from a server.
+     * @param rawData The raw JSON:API data describing the document
+     * @param context The context to use to fetch related documents (not used during the initial construction)
+     * @param url An optional URL can be provided to indicate where the raw data came from
+     * @param sparseFields An object listing [sparse fieldsets](https://jsonapi.org/format/1.0/#fetching-sparse-fieldsets) for subsequent fetch operations
+     * @throws [[SchemaError]] when the given rawData does not look like a JSON:API document
+     */
+    constructor(
+      readonly rawData: Spec.JsonApiDocument,
+      private readonly context: Context,
+      public readonly url?: URL,
+      public readonly sparseFields?: SparseFields
+    ) {
+      Spec.checkDocumentSchema(rawData);
+    }
+
+    /**
+     * `true` if this document's primary data is an array of resources and not just a single resource
+     * @memoized
+     */
+    @memoized()
+    get hasManyResources(): boolean {
+      return Array.isArray(this.rawData.data);
+    }
+
+    /**
+     * Array of the primary [[Resource]]s in this document. For example the JSON:API document
+     *
+     * ```json
+     * {
+     *   "data": [{
+     *     "type": "articles",
+     *     "id": "1"
+     *   }]
+     * }
+     * ```
+     *
+     * would have a primary resource array of length 1 with one element with type "articles" and id "1".
+     *
+     * @returns Empty array when no primary resources are contained in the document
+     * @throws [[CardinalityError]] if the document instead only contains a singular resource.
+     * @memoized
+     */
+    @memoized()
+    get resources(): PrimaryResource[] {
+      if (!this.hasManyResources) {
+        throw new CardinalityError(
+          'Document does not contain an array of resources. Use the `resource` property instead'
+        );
+      }
+      if (!('data' in this.rawData)) {
+        return [];
+      }
+      return (<Spec.ResourceObject[]>this.rawData.data).map(
+        primaryData => new PrimaryResource(primaryData, this, primaryData.type, this.context)
+      );
+    }
+
+    /**
+     * The primary [[Resource]] in this document. For example the JSON:API document
+     *
+     * ```json
+     * {
+     *   "data": {
+     *     "type": "articles",
+     *     "id": "1"
+     *   }
+     * }
+     * ```
+     *
+     * would have a primary resource with type "articles" and id "1".
+     *
+     * @returns Null if the primary data consists of the value `null`
+     * @throws [[CardinalityError]] if the document instead contains an array of resources.
+     * @memoized
+     */
+    @memoized()
+    get resource(): PrimaryResource | null | undefined {
+      if (this.hasManyResources) {
+        throw new CardinalityError('Document contains an array of resources. Use the `resources` property instead');
+      }
+      if (this.rawData.data === null) {
+        return null;
+      }
+      if (!('data' in this.rawData)) {
+        return undefined;
+      }
+      const primaryData = <Spec.ResourceObject>this.rawData.data;
+      return new PrimaryResource(primaryData, this, primaryData.type, this.context);
+    }
+
+    /**
+     * Map from type and id to [[RelatedResource]] for all resources under the top level `included` member.
+     * For example for the JSON:API document
+     *
+     * ```json
+     * {
+     *   "data": null,
+     *   "included": [
+     *      {"type": "articles", "id": "1"},
+     *      {"type": "articles", "id": "2"},
+     *      {"type": "people", "id": "5"}
+     *    ]
+     * }
+     * ```
+     * calling `includedResources` would produce
+     * ```typescript
+     * {
+     *   articles: {
+     *     '1': RelatedResource(...),
+     *     '2': RelatedResource(...),
+     *   },
+     *   people: {
+     *     '5': RelatedResource(...)
+     *   }
+     * }
+     * ```
+     * @memoized
+     */
+    @memoized()
+    get includedResources(): IncludedResourcesMap {
+      const res: IncludedResourcesMap = {};
+      for (const includedResource of this.rawData.included || []) {
+        if (!(includedResource.type in res)) {
+          res[includedResource.type] = {};
+        }
+        res[includedResource.type][includedResource.id] = new RelatedResource(
+          this,
+          includedResource.id,
+          includedResource.type,
+          this.context
+        );
+      }
+      return res;
+    }
+  }
+
+  /** Collection of [[RelatedResource]]s included in a compound document, organized by type and id */
+  export type IncludedResourcesMap = { [type: string]: { [id: string]: RelatedResource } };
+  /** Mapping from relationship name to [[Relationship]] */
+  export type Relationships = { [relationshipName: string]: Relationship };
+  /** Mapping from link name to [[Link]] */
+  export type Links = { [linkName: string]: Link };
+
+  /** @hidden */
+  type RelationshipToResource = { [relationshipName: string]: Promise<Resource> };
+  /** @hidden */
+  type RelationshipToResources = { [relationshipName: string]: Promise<Resource[]> };
+  /** @hidden */
+  type RelationshipToDocument = { [relationshipName: string]: Promise<Document> };
+
+  /** @hidden */
+  class RelatedResourceAccessor<T extends RelationshipToResource> implements ProxyHandler<T> {
+    constructor(private readonly parent: Resource) {}
+    /**
+     * Provide access to parent related resource
+     * @hidden
+     */
+    async get(target: T, relationshipName: string, receiver: any): Promise<Resource | null | undefined> {
+      if (relationshipName in this.parent.relationships) {
+        return this.parent.relationships[relationshipName].resource();
+      }
+    }
+  }
+
+  /** @hidden */
+  class RelatedResourcesAccessor<T extends RelationshipToResources> implements ProxyHandler<T> {
+    constructor(private readonly parent: Resource) {}
+    /**
+     * Provide access to parent related resources
+     * @hidden
+     */
+    async get(target: T, relationshipName: string, receiver: any): Promise<Resource[]> {
+      if (relationshipName in this.parent.relationships) {
+        return this.parent.relationships[relationshipName].resources();
+      }
+      return [];
+    }
+  }
+
+  /** @hidden */
+  class RelatedDocumentAccessor<T extends RelationshipToDocument> implements ProxyHandler<T> {
+    constructor(private readonly parent: Resource) {}
+    /**
+     * Provide access to parent related document
+     * @hidden
+     */
+    async get(target: T, relationshipName: string, receiver: any): Promise<Document | undefined> {
+      if (relationshipName in this.parent.relationships) {
+        return this.parent.relationships[relationshipName].relatedDocument();
+      }
     }
   }
 

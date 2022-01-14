@@ -4,7 +4,7 @@ module.exports = {
   name: 'grivet',
   globals: {
     'ts-jest': {
-      tsConfig: 'tsconfig.spec.json'
+      tsconfig: 'tsconfig.spec.json'
     }
   },
   coverageDirectory: 'coverage',
