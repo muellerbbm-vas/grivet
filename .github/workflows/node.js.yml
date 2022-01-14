@@ -10,7 +10,9 @@ on:
     - develop
     - feature/*
   pull_request:
-    branches: [ master ]
+    branches:
+     - master
+     - develop
   workflow_dispatch:
     
 
