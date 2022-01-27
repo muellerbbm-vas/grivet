@@ -16,10 +16,7 @@ export namespace Spec {
    * @throws [[SchemaError]]
    */
   export function checkDocumentSchema(doc: JsonApiDocument) {
-    SchemaChecker.fromData(doc, 'Document')
-      .singleObject()
-      .atLeastOneOf(['data', 'errors', 'meta'])
-      .allowedMembers(['data', 'errors', 'meta', 'jsonapi', 'links', 'included']);
+    SchemaChecker.fromData(doc, 'Document').singleObject().atLeastOneOf(['data', 'errors', 'meta']);
     if ('data' in doc) {
       if (Array.isArray(doc['data'])) {
         for (const r of doc['data'] as object[]) {
@@ -39,10 +36,7 @@ export namespace Spec {
     if (res === null) {
       return;
     }
-    SchemaChecker.fromData(res, 'Resource object')
-      .singleObject()
-      .has(['id', 'type'])
-      .allowedMembers(['id', 'type', 'attributes', 'relationships', 'links', 'meta']);
+    SchemaChecker.fromData(res, 'Resource object').singleObject().has(['id', 'type']);
   }
 
   /**
@@ -50,9 +44,7 @@ export namespace Spec {
    * @throws [[SchemaError]]
    */
   export function checkRelationshipObjectSchema(rel: object) {
-    SchemaChecker.fromData(rel, 'Relationship object')
-      .singleObject()
-      .atLeastOneOf(['links', 'data', 'meta']);
+    SchemaChecker.fromData(rel, 'Relationship object').singleObject().atLeastOneOf(['links', 'data', 'meta']);
   }
 
   /**
