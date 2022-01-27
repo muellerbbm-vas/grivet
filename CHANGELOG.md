@@ -5,6 +5,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [v0.0.7](https://github.com/muellerbbm-vas/grivet/compare/v0.0.6...v0.0.7) - 2022-01-27
+
+### Fixed
+
+- Unknown members in documents are no longer considered errors and are now ignored as per the standard
+
 ## [v0.0.6](https://github.com/muellerbbm-vas/grivet/compare/v0.0.5...v0.0.6) - 2019-10-23
 
 ### Fixed

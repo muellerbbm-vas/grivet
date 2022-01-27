@@ -862,8 +862,12 @@ describe('Runtime SchemaErrors', () => {
   const malformedDocument = {
     dat: {
       id: '1',
-      type: 't'
-    }
+      type: 't',
+    },
+  };
+  const documentWithExtraUnknownMember = {
+    data: { id: '1', type: 't' },
+    bla: 'bla',
   };
   const malformedMainResource = {
     data: {
@@ -873,13 +877,20 @@ describe('Runtime SchemaErrors', () => {
 
   it('are thrown for malformed documents', () => {
     expect(() => {
-      const doc = new JsonApi.Document((malformedDocument as unknown) as Spec.JsonApiDocument, new TestContext({}));
+      const doc = new JsonApi.Document(malformedDocument as unknown as Spec.JsonApiDocument, new TestContext({}));
     }).toThrow(/must contain at least one of/);
   });
   it('are thrown for malformed main resources', () => {
     expect(() => {
       const doc = new JsonApi.Document(malformedMainResource as Spec.JsonApiDocument, new TestContext({}));
     }).toThrow(/must contain at least the following/);
+  });
+  it('are not thrown for documents that contain unknown members', () => {
+    const doc = new JsonApi.Document(
+      documentWithExtraUnknownMember as unknown as Spec.JsonApiDocument,
+      new TestContext({})
+    );
+    expect(doc).toBeDefined();
   });
 });
 
