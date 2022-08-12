@@ -117,6 +117,7 @@ The attributes of the _author_ resource can then simply be obtained using its `a
 
 - [Implementing the `Context` interface](./guides/context.md)
 - [Using Sparse Fieldsets](./guides/sparseFieldsets.md)
+- [Experimental: constructing a document for POSTing to a server](./guides/clientDocument.md)
 
 ## Examples
 
@@ -148,6 +149,6 @@ Have a look at the [library reference](https://muellerbbm-vas.github.io/grivet/d
 
 ## License
 
-Copyright © 2019 Müller-BBM VibroAkustik Systeme GmbH
+Copyright © 2019-2022 Müller-BBM VibroAkustik Systeme GmbH
 
 Licensed under the [MIT](https://github.com/muellerbbm-vas/grivet/blob/master/LICENSE) license

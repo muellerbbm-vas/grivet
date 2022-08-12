@@ -468,7 +468,7 @@ export namespace JsonApi {
         return [];
       }
       return (<Spec.ResourceObject[]>this.rawData.data).map(
-        primaryData => new PrimaryResource(primaryData, this, primaryData.type, this.context)
+        (primaryData) => new PrimaryResource(primaryData, this, primaryData.type, this.context)
       );
     }
 
@@ -654,7 +654,7 @@ export namespace JsonApi {
         : [<Spec.ResourceObject>this.document.rawData.data];
       const candidates = primaryDataArray.concat(this.document.rawData.included || []);
       const filtered = candidates.filter(
-        resourceObject => resourceObject.type === this.type && resourceObject.id === this.id
+        (resourceObject) => resourceObject.type === this.type && resourceObject.id === this.id
       );
       if (filtered.length === 0) {
         throw new IdMismatchError(`Resource with id "${this.id}" and type "${this.type}" not found in document`);
@@ -799,7 +799,9 @@ export namespace JsonApi {
             );
           }
           return Promise.resolve(
-            resourceIdentifiers.map(rid => new RelatedResource(this.referringDocument, rid.id, rid.type, this.context))
+            resourceIdentifiers.map(
+              (rid) => new RelatedResource(this.referringDocument, rid.id, rid.type, this.context)
+            )
           );
         }
       }
@@ -892,7 +894,8 @@ export namespace JsonApi {
 
   /**
    * Some helpers for constructing a document to POST to a server
-   * @hidden
+   *
+   * @experimental
    */
   export class ClientDocument {
     private readonly rawData: Spec.ClientJsonApiDocument;
@@ -904,7 +907,7 @@ export namespace JsonApi {
       }
     }
 
-    /** Sets a primary resource attribute @hidden */
+    /** Sets a primary resource attribute @experimental */
     setAttribute(name: string, value: string) {
       if (!this.rawData.data.attributes) {
         this.rawData.data.attributes = {};
@@ -912,18 +915,15 @@ export namespace JsonApi {
       this.rawData.data.attributes[name] = value;
     }
 
-    /** Adds a named relationship to a resource @hidden */
-    setRelationship(
-      name: string,
-      ressourceIdentifier: Spec.ResourceIdentifierObject | Spec.ResourceIdentifierObject[]
-    ) {
+    /** Adds a named relationship to a resource @experimental */
+    setRelationship(name: string, resourceIdentifier: Spec.ResourceIdentifierObject | Spec.ResourceIdentifierObject[]) {
       if (!this.rawData.data.relationships) {
         this.rawData.data.relationships = {};
       }
-      this.rawData.data.relationships[name] = { data: ressourceIdentifier };
+      this.rawData.data.relationships[name] = { data: resourceIdentifier };
     }
 
-    /** Adds the resource to `included` @hidden */
+    /** Adds the resource to `included` @experimental */
     includeResource(resource: Spec.ResourceObject) {
       if (!this.rawData.included) {
         this.rawData.included = [];
@@ -931,7 +931,7 @@ export namespace JsonApi {
       this.rawData.included.push(resource);
     }
 
-    /** Adds the resources to `included` @hidden */
+    /** Adds the resources to `included` @experimental */
     includeResources(resources: Spec.ResourceObject[]) {
       if (!this.rawData.included) {
         this.rawData.included = [];
@@ -939,7 +939,7 @@ export namespace JsonApi {
       this.rawData.included.push(...resources);
     }
 
-    /** The raw JSON:API data @hidden */
+    /** The raw JSON:API data @experimental */
     get data(): Spec.ClientJsonApiDocument {
       return this.rawData;
     }
