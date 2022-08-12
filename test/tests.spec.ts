@@ -38,8 +38,8 @@ describe('The JSON:API top level structure', () => {
       data: {
         type: 'articles',
         id: '1',
-        attributes: { a: 'x' }
-      }
+        attributes: { a: 'x' },
+      },
     },
 
     '/article/many': {
@@ -47,39 +47,39 @@ describe('The JSON:API top level structure', () => {
         {
           type: 'articles',
           id: '1',
-          attributes: { a: 'x' }
+          attributes: { a: 'x' },
         },
         {
           type: 'articles',
           id: '2',
-          attributes: { f: 'h' }
-        }
-      ]
+          attributes: { f: 'h' },
+        },
+      ],
     },
 
     '/article/resourceIdOnly': {
       data: {
         type: 'articles',
-        id: '1'
-      }
+        id: '1',
+      },
     },
 
     '/article/manyResourceIds': {
       data: [
         {
           type: 'articles',
-          id: '1'
+          id: '1',
         },
         {
           type: 'articles',
-          id: '2'
-        }
-      ]
+          id: '2',
+        },
+      ],
     },
 
     '/noData': {
-      errors: [{ id: '1' }]
-    }
+      errors: [{ id: '1' }],
+    },
   };
 
   it('may contain "null" data', async () => {
@@ -179,41 +179,41 @@ describe('A JSON:API resource object', () => {
         type: 'articles',
         attributes: {
           title: 'dummy',
-          nested: { level2: [11, 22, 33], x: 'y' }
+          nested: { level2: [11, 22, 33], x: 'y' },
         },
         relationships: {
           author: {
             links: {
               self: 'http://example.com/articles/1/relationships/author',
-              related: 'http://example.com/articles/1/author'
+              related: 'http://example.com/articles/1/author',
             },
-            data: { type: 'people', id: '9' }
+            data: { type: 'people', id: '9' },
           },
-          coauthor: { meta: null }
+          coauthor: { meta: null },
         },
         links: {
           self: 'http://example.com/articles/1',
           related: 'http://example.com/authors/1',
-          test: { href: 'http://example.com/test', meta: { a: 4 } }
+          test: { href: 'http://example.com/test', meta: { a: 4 } },
         },
         meta: {
           xyz: { abc: 123 },
           links: {
             a: 'http://example.com/a',
-            b: 'http://example.com/b'
-          }
-        }
-      }
+            b: 'http://example.com/b',
+          },
+        },
+      },
     },
     '/articles/2': {
       data: {
         id: '2',
         type: 'articles',
         meta: {
-          xyz: { abc: 123 }
-        }
-      }
-    }
+          xyz: { abc: 123 },
+        },
+      },
+    },
   };
 
   const documentPath = '/articles/1';
@@ -282,39 +282,45 @@ describe('A JSON:API compound document', () => {
         type: 'articles',
         id: '1',
         attributes: {
-          title: 'JSON:API'
+          title: 'JSON:API',
         },
         links: {
-          self: 'http://example.com/articles/1'
+          self: 'http://example.com/articles/1',
         },
         relationships: {
           author: {
             links: {
               self: 'http://example.com/articles/1/relationships/author',
-              related: 'http://example.com/articles/1/author'
+              related: 'http://example.com/articles/1/author',
             },
-            data: { type: 'people', id: '9' }
+            data: { type: 'people', id: '9' },
           },
           comments: {
             links: {
               self: 'http://example.com/articles/1/relationships/comments',
-              related: 'http://example.com/articles/1/comments'
+              related: 'http://example.com/articles/1/comments',
             },
-            data: [{ type: 'comments', id: '5' }, { type: 'comments', id: '12' }]
+            data: [
+              { type: 'comments', id: '5' },
+              { type: 'comments', id: '12' },
+            ],
           },
           test: {
-            data: { id: '11', type: 'tests' }
+            data: { id: '11', type: 'tests' },
           },
           tests: {
-            data: [{ id: '11', type: 'tests' }, { id: '12', type: 'tests' }]
+            data: [
+              { id: '11', type: 'tests' },
+              { id: '12', type: 'tests' },
+            ],
           },
           nothingList: {
-            data: []
+            data: [],
           },
           nothingDetail: {
-            data: null
-          }
-        }
+            data: null,
+          },
+        },
       },
       included: [
         {
@@ -322,49 +328,54 @@ describe('A JSON:API compound document', () => {
           id: '9',
           attributes: {
             'first-name': 'test',
-            'last-name': 'test'
+            'last-name': 'test',
           },
           relationships: {
-            likes: { data: [{ type: 'comments', id: '5' }, { type: 'comments', id: '12' }] },
+            likes: {
+              data: [
+                { type: 'comments', id: '5' },
+                { type: 'comments', id: '12' },
+              ],
+            },
             doc: {
-              data: { type: 'articles', id: '1' }
-            }
+              data: { type: 'articles', id: '1' },
+            },
           },
           links: {
-            self: 'http://example.com/people/9'
-          }
+            self: 'http://example.com/people/9',
+          },
         },
         {
           type: 'comments',
           id: '5',
           attributes: {
-            body: 'xyz'
+            body: 'xyz',
           },
           relationships: {
             author: {
-              data: { type: 'people', id: '2' }
-            }
+              data: { type: 'people', id: '2' },
+            },
           },
           links: {
-            self: 'http://example.com/comments/5'
-          }
+            self: 'http://example.com/comments/5',
+          },
         },
         {
           type: 'comments',
           id: '12',
           attributes: {
-            body: 'dummy'
+            body: 'dummy',
           },
           relationships: {
             author: {
-              data: { type: 'people', id: '9' }
-            }
+              data: { type: 'people', id: '9' },
+            },
           },
           links: {
-            self: 'http://example.com/comments/12'
-          }
-        }
-      ]
+            self: 'http://example.com/comments/12',
+          },
+        },
+      ],
     },
     '/articles/broken': {
       data: {
@@ -372,11 +383,11 @@ describe('A JSON:API compound document', () => {
         id: '2',
         relationships: {
           author: {
-            meta: { x: 'a' }
-          }
-        }
-      }
-    }
+            meta: { x: 'a' },
+          },
+        },
+      },
+    },
   };
 
   const documentPath = '/articles/1';
@@ -458,9 +469,9 @@ describe('A JSON:API compound document', () => {
   it('complains about non-existent type/id pairs', async () => {
     const document = await makeDocument(documentPath, testApi);
     const article = document.resource;
-    const firstCommentAuthorRelationship = await (await article.relatedResources['comments'])[0].relationships[
-      'author'
-    ];
+    const firstCommentAuthorRelationship = await (
+      await article.relatedResources['comments']
+    )[0].relationships['author'];
     expect(firstCommentAuthorRelationship.data['id']).toBe('2');
     expect(await firstCommentAuthorRelationship.relatedDocument()).toBeUndefined();
     const firstCommentAuthor = await firstCommentAuthorRelationship.resource();
@@ -499,26 +510,26 @@ describe('A JSON:API compound document with multiple main resources', () => {
           type: 'articles',
           id: '1',
           attributes: {
-            title: 'JSON:API'
+            title: 'JSON:API',
           },
           relationships: {
             author: {
-              data: { type: 'people', id: '9' }
-            }
-          }
+              data: { type: 'people', id: '9' },
+            },
+          },
         },
         {
           type: 'articles',
           id: '2',
           attributes: {
-            title: 'dummy'
+            title: 'dummy',
           },
           relationships: {
             author: {
-              data: { type: 'people', id: '9' }
-            }
-          }
-        }
+              data: { type: 'people', id: '9' },
+            },
+          },
+        },
       ],
       included: [
         {
@@ -526,16 +537,19 @@ describe('A JSON:API compound document with multiple main resources', () => {
           id: '9',
           attributes: {
             'first-name': 'test',
-            'last-name': 'test'
+            'last-name': 'test',
           },
           relationships: {
             doc: {
-              data: [{ type: 'articles', id: '1' }, { type: 'articles', id: '2' }]
-            }
-          }
-        }
-      ]
-    }
+              data: [
+                { type: 'articles', id: '1' },
+                { type: 'articles', id: '2' },
+              ],
+            },
+          },
+        },
+      ],
+    },
   };
 
   const documentPath = '/articles';
@@ -558,22 +572,22 @@ describe('A non-compliant JSON:API compound document with duplicate resources', 
           id: '1',
           relationships: {
             other: {
-              data: { type: 'articles', id: '2' }
-            }
-          }
+              data: { type: 'articles', id: '2' },
+            },
+          },
         },
         {
           type: 'articles',
-          id: '2'
-        }
+          id: '2',
+        },
       ],
       included: [
         {
           type: 'articles',
-          id: '2'
-        }
-      ]
-    }
+          id: '2',
+        },
+      ],
+    },
   };
 
   const documentPath = '/articles';
@@ -597,20 +611,23 @@ describe('A JSON:API document with no included resources', () => {
           id: '1',
           relationships: {
             other: {
-              data: { type: 'articles', id: '2' }
+              data: { type: 'articles', id: '2' },
             },
             test: {
               data: { type: 'tests', id: '11' },
-              links: { related: 'http://example.com/tests/11' }
+              links: { related: 'http://example.com/tests/11' },
             },
             tests: {
-              data: [{ type: 'tests', id: '11' }, { type: 'tests', id: '12' }],
-              links: { related: 'http://example.com/tests' }
-            }
-          }
-        }
-      ]
-    }
+              data: [
+                { type: 'tests', id: '11' },
+                { type: 'tests', id: '12' },
+              ],
+              links: { related: 'http://example.com/tests' },
+            },
+          },
+        },
+      ],
+    },
   };
 
   const documentPath = '/articles';
@@ -642,31 +659,34 @@ describe('A JSON:API related document', () => {
         relationships: {
           author: {
             links: {
-              related: 'http://example.com/people/9'
-            }
+              related: 'http://example.com/people/9',
+            },
           },
           comments: {
             data: null,
             links: {
-              related: 'http://example.com/comments'
-            }
+              related: 'http://example.com/comments',
+            },
           },
           review: {
             data: null,
             links: {
-              related: 'http://example.com/review/7'
-            }
+              related: 'http://example.com/review/7',
+            },
           },
           test: {
             data: { type: 'tests', id: '11' },
-            links: { related: 'http://example.com/tests/11' }
+            links: { related: 'http://example.com/tests/11' },
           },
           tests: {
-            data: [{ type: 'tests', id: '11' }, { type: 'tests', id: '12' }],
-            links: { related: 'http://example.com/tests' }
-          }
-        }
-      }
+            data: [
+              { type: 'tests', id: '11' },
+              { type: 'tests', id: '12' },
+            ],
+            links: { related: 'http://example.com/tests' },
+          },
+        },
+      },
     },
     '/people/9': {
       data: {
@@ -674,32 +694,32 @@ describe('A JSON:API related document', () => {
         id: '9',
         attributes: {
           'first-name': 'test',
-          'last-name': 'test'
-        }
-      }
+          'last-name': 'test',
+        },
+      },
     },
     '/comments': {
       data: [
         {
           type: 'comments',
-          id: '1'
-        }
-      ]
+          id: '1',
+        },
+      ],
     },
     '/review/7': {
       data: {
         type: 'reviews',
-        id: '7'
-      }
+        id: '7',
+      },
     },
     '/tests/11': {
       data: {
         type: 'tests',
         id: '11',
         attributes: {
-          a: 1
-        }
-      }
+          a: 1,
+        },
+      },
     },
     '/tests': {
       data: [
@@ -707,18 +727,18 @@ describe('A JSON:API related document', () => {
           type: 'tests',
           id: '11',
           attributes: {
-            a: 1
-          }
+            a: 1,
+          },
         },
         {
           type: 'tests',
           id: '12',
           attributes: {
-            a: 2
-          }
-        }
-      ]
-    }
+            a: 2,
+          },
+        },
+      ],
+    },
   };
 
   const context = new TestContext(testApi);
@@ -769,15 +789,15 @@ describe('Construction of resources from existing JSON objects', () => {
     data: {
       id: '1',
       type: 'articles',
-      attributes: { title: 'dummy' }
-    }
+      attributes: { title: 'dummy' },
+    },
   };
   const doc = new JsonApi.Document(rawDoc, new DummyContext());
 
   const rawResource: Spec.ResourceObject = {
     id: '11',
     type: 'people',
-    attributes: { name: 'xxx' }
+    attributes: { name: 'xxx' },
   };
 
   it('is possible for documents', () => {
@@ -805,26 +825,26 @@ describe('A link containing path name only ', () => {
         relationships: {
           author: {
             links: {
-              related: '/people/9'
-            }
+              related: '/people/9',
+            },
           },
           author2: {
             links: {
               related: {
-                href: '/people/9'
-              }
-            }
-          }
+                href: '/people/9',
+              },
+            },
+          },
         },
         links: {
-          self: '/articles/1'
+          self: '/articles/1',
         },
         meta: {
           links: {
-            dummy: '/dummy/1'
-          }
-        }
-      }
+            dummy: '/dummy/1',
+          },
+        },
+      },
     },
     '/people/9': {
       data: {
@@ -832,10 +852,10 @@ describe('A link containing path name only ', () => {
         id: '9',
         attributes: {
           'first-name': 'test',
-          'last-name': 'test'
-        }
-      }
-    }
+          'last-name': 'test',
+        },
+      },
+    },
   };
 
   it('works when fetching related resources', async () => {
@@ -871,8 +891,8 @@ describe('Runtime SchemaErrors', () => {
   };
   const malformedMainResource = {
     data: {
-      data: { id: '1', type: 't' }
-    }
+      data: { id: '1', type: 't' },
+    },
   };
 
   it('are thrown for malformed documents', () => {
@@ -897,12 +917,12 @@ describe('Runtime SchemaErrors', () => {
 describe('Sparse fieldsets', () => {
   it('can be specified when constructing a document', async () => {
     const context = {
-      getDocument: jest.fn(url => Promise.resolve({ data: null }))
+      getDocument: jest.fn((url) => Promise.resolve({ data: null })),
     };
     const sparseFields = {
       type1: ['f11', 'f12', 'f13'],
       type2: ['f21', 'f22', 'f23'],
-      type3: ['f31', 'f32', 'f33']
+      type3: ['f31', 'f32', 'f33'],
     };
     const doc = await JsonApi.Document.fromURL(new URL('http://example.com'), context, sparseFields);
     expect(context.getDocument.mock.calls.length).toBe(1);
@@ -923,11 +943,11 @@ describe('Sparse fieldsets', () => {
           relationships: {
             author: {
               links: {
-                related: 'http://example.com/people/9'
-              }
-            }
-          }
-        }
+                related: 'http://example.com/people/9',
+              },
+            },
+          },
+        },
       },
       '/people/9': {
         data: {
@@ -935,18 +955,18 @@ describe('Sparse fieldsets', () => {
           id: '9',
           attributes: {
             'first-name': 'test',
-            'last-name': 'test'
-          }
-        }
-      }
+            'last-name': 'test',
+          },
+        },
+      },
     };
     const context = {
-      getDocument: jest.fn((url: URL) => Promise.resolve(testApi[url.pathname]))
+      getDocument: jest.fn((url: URL) => Promise.resolve(testApi[url.pathname])),
     };
     const sparseFields = {
       type1: ['f11', 'f12', 'f13'],
       type2: ['f21', 'f22', 'f23'],
-      type3: ['f31', 'f32', 'f33']
+      type3: ['f31', 'f32', 'f33'],
     };
     const doc = await JsonApi.Document.fromURL(new URL('http://example.com/articles/1'), context, sparseFields);
     const author = doc.resource.relatedDocuments['author'];

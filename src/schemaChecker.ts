@@ -48,7 +48,7 @@ export class SchemaChecker {
    * check that the object has all of the given members
    */
   has(members: string[]) {
-    if (!members.every(m => m in this.obj)) {
+    if (!members.every((m) => m in this.obj)) {
       throw new SchemaError(`${this.name} must contain at least the following: ${members}`);
     }
     return this;
@@ -58,7 +58,7 @@ export class SchemaChecker {
    * check that the object has at least one of the given members
    */
   atLeastOneOf(members: string[]) {
-    if (!members.some(m => m in this.obj)) {
+    if (!members.some((m) => m in this.obj)) {
       throw new SchemaError(`${this.name} must contain at least one of: ${members}`);
     }
     return this;
@@ -68,7 +68,7 @@ export class SchemaChecker {
    * check that the object has no other members than the given allowed members
    */
   allowedMembers(members: string[]) {
-    if (!Object.keys(this.obj).every(m => members.includes(m))) {
+    if (!Object.keys(this.obj).every((m) => members.includes(m))) {
       throw new SchemaError(`${this.name} may only contain one of: ${members}`);
     }
     return this;
