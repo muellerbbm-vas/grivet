@@ -9,7 +9,7 @@ export class SchemaError extends Error {
 
 /**
  * Implements some simple schema checks on objects
- * @hidden
+ * @internal
  */
 export class SchemaChecker {
   /** Factory function creating a new SchemaChecker */
