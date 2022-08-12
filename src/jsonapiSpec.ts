@@ -11,9 +11,9 @@ export namespace Spec {
   /* tslint:disable:completed-docs */
 
   /**
-   * Runtime checks for basic [[JsonApiDocument]] schema
+   * Runtime checks for basic {@link JsonApiDocument} schema
    *
-   * @throws [[SchemaError]]
+   * @throws SchemaError
    */
   export function checkDocumentSchema(doc: JsonApiDocument) {
     SchemaChecker.fromData(doc, 'Document').singleObject().atLeastOneOf(['data', 'errors', 'meta']);
@@ -29,8 +29,8 @@ export namespace Spec {
   }
 
   /**
-   * Runtime checks for basic [[ResourceObject]] schema
-   * @throws [[SchemaError]]
+   * Runtime checks for basic {@link ResourceObject} schema
+   * @throws SchemaError
    */
   export function checkResourceObjectSchema(res: object | null) {
     if (res === null) {
@@ -40,8 +40,8 @@ export namespace Spec {
   }
 
   /**
-   * Runtime checks for basic [[RelationshipObject]] schema
-   * @throws [[SchemaError]]
+   * Runtime checks for basic {@link RelationshipObject} schema
+   * @throws SchemaError
    */
   export function checkRelationshipObjectSchema(rel: object) {
     SchemaChecker.fromData(rel, 'Relationship object').singleObject().atLeastOneOf(['links', 'data', 'meta']);
