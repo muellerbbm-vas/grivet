@@ -5,6 +5,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [v0.0.8](https://github.com/muellerbbm-vas/grivet/compare/v0.0.7...v0.0.8) - 2022-08-12
+
+### Changed
+
+- Marked the ClientDocument class as "experimental" and added some basic documentation
+
 ## [v0.0.7](https://github.com/muellerbbm-vas/grivet/compare/v0.0.6...v0.0.7) - 2022-01-27
 
 ### Fixed
