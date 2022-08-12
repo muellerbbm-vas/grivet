@@ -918,7 +918,8 @@ export namespace JsonApi {
 
   /**
    * Some helpers for constructing a document to POST to a server
-   * @hidden
+   *
+   * @experimental
    */
   export class ClientDocument {
     private readonly rawData: Spec.ClientJsonApiDocument;
@@ -930,7 +931,7 @@ export namespace JsonApi {
       }
     }
 
-    /** Sets a primary resource attribute @hidden */
+    /** Sets a primary resource attribute @experimental */
     setAttribute(name: string, value: string) {
       if (!this.rawData.data.attributes) {
         this.rawData.data.attributes = {};
@@ -938,18 +939,15 @@ export namespace JsonApi {
       this.rawData.data.attributes[name] = value;
     }
 
-    /** Adds a named relationship to a resource @hidden */
-    setRelationship(
-      name: string,
-      ressourceIdentifier: Spec.ResourceIdentifierObject | Spec.ResourceIdentifierObject[]
-    ) {
+    /** Adds a named relationship to a resource @experimental */
+    setRelationship(name: string, resourceIdentifier: Spec.ResourceIdentifierObject | Spec.ResourceIdentifierObject[]) {
       if (!this.rawData.data.relationships) {
         this.rawData.data.relationships = {};
       }
-      this.rawData.data.relationships[name] = { data: ressourceIdentifier };
+      this.rawData.data.relationships[name] = { data: resourceIdentifier };
     }
 
-    /** Adds the resource to `included` @hidden */
+    /** Adds the resource to `included` @experimental */
     includeResource(resource: Spec.ResourceObject) {
       if (!this.rawData.included) {
         this.rawData.included = [];
@@ -957,7 +955,7 @@ export namespace JsonApi {
       this.rawData.included.push(resource);
     }
 
-    /** Adds the resources to `included` @hidden */
+    /** Adds the resources to `included` @experimental */
     includeResources(resources: Spec.ResourceObject[]) {
       if (!this.rawData.included) {
         this.rawData.included = [];
@@ -965,7 +963,7 @@ export namespace JsonApi {
       this.rawData.included.push(...resources);
     }
 
-    /** The raw JSON:API data @hidden */
+    /** The raw JSON:API data @experimental */
     get data(): Spec.ClientJsonApiDocument {
       return this.rawData;
     }

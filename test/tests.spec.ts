@@ -978,3 +978,23 @@ describe('Sparse fieldsets', () => {
     expect(calledURL.searchParams.get('fields[type3]')).toBe('f31,f32,f33');
   });
 });
+
+describe('A ClientDocument', () => {
+  it('can be constructed', () => {
+    let clientDoc = new JsonApi.ClientDocument('article', '1');
+    clientDoc.setAttribute('title', 'test');
+    const author: Spec.ResourceIdentifierObject = {
+      id: '1',
+      type: 'people',
+    };
+    clientDoc.setRelationship('author', author);
+    const resource: Spec.ResourceObject = {
+      id: '1',
+      type: 'people',
+      attributes: {
+        name: 'test',
+      },
+    };
+    clientDoc.includeResource(resource);
+  });
+});

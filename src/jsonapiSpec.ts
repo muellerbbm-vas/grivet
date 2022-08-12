@@ -191,8 +191,8 @@ export namespace Spec {
   /**
    * Some aspects of an JSON API document which are usually sufficient for client requests
    *
+   * @experimental
    * @see https://jsonapi.org/format/1.0/#document-top-level
-   * @hidden
    */
   export type ClientJsonApiDocument = {
     data: ClientResourceObject;
