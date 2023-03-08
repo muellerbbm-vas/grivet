@@ -46,6 +46,9 @@
       "pre-push": "npm run test"
     }
   },
+  "dependencies": {
+    "tslib": "2.5.0"
+  },
   "devDependencies": {
     "@types/jest": "27.5.0",
     "@types/node": "18.14.6",
