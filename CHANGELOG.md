@@ -5,6 +5,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [v0.0.9](https://github.com/muellerbbm-vas/grivet/compare/v0.0.8...v0.0.9) - 2023-03-08
+
+### Fixed
+
+- Removed dependency on `tslib`
+
 ## [v0.0.8](https://github.com/muellerbbm-vas/grivet/compare/v0.0.7...v0.0.8) - 2022-08-12
 
 ### Changed
