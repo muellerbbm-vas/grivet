@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@types/jest": "27.5.0",
-    "@types/node": "20.4.8",
+    "@types/node": "20.8.0",
     "husky": "8.0.3",
     "jest": "27.5.1",
     "prettier": "3.0.1",
