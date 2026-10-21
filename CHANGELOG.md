@@ -5,6 +5,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- `RelatedResource`s are looked up through a per-document type/id index (`Document.findResourceObjects`) instead of
+  scanning all primary and included resources for every lookup. Resolving the related resources of large compound
+  documents (tens of thousands of included resources) now takes milliseconds instead of many seconds.
+
 ## [v0.0.9](https://github.com/muellerbbm-vas/grivet/compare/v0.0.8...v0.0.9) - 2023-03-08
 
 ### Fixed

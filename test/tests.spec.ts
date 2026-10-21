@@ -998,3 +998,125 @@ describe('A ClientDocument', () => {
     clientDoc.includeResource(resource);
   });
 });
+
+describe('A large JSON:API compound document', () => {
+  // A measurement-like document: `count` datasets, each with a description and parameters,
+  // all of them included. Resolving the related resources must not scan the whole document
+  // for each of them.
+  function makeRawDocument(count: number): Spec.JsonApiDocument {
+    const datasetIds: Spec.ResourceIdentifierObject[] = [];
+    const included: Spec.ResourceObject[] = [];
+    for (let i = 0; i < count; i++) {
+      datasetIds.push({ type: 'datasets', id: `ds${i}` });
+      included.push({
+        type: 'datasets',
+        id: `ds${i}`,
+        relationships: {
+          description: { data: { type: 'descriptions', id: `desc${i}` } },
+          parameters: { data: { type: 'parameters', id: `par${i}` } },
+        },
+      });
+      included.push({ type: 'descriptions', id: `desc${i}`, attributes: { name: `channel ${i}` } });
+      included.push({ type: 'parameters', id: `par${i}`, attributes: { index: i } });
+    }
+    return {
+      data: {
+        type: 'measurements',
+        id: 'mea',
+        relationships: {
+          datasets: { data: datasetIds },
+          self: { data: { type: 'measurements', id: 'mea' } },
+        },
+      },
+      included,
+    };
+  }
+
+  const context = new TestContext({});
+
+  it('finds resource objects by type and id', () => {
+    const document = new JsonApi.Document(makeRawDocument(3), context);
+    expect(document.findResourceObjects('measurements', 'mea')).toHaveLength(1);
+    expect(document.findResourceObjects('descriptions', 'desc2')[0].attributes).toEqual({ name: 'channel 2' });
+    expect(document.findResourceObjects('descriptions', 'desc3')).toEqual([]);
+    expect(document.findResourceObjects('nothing', 'mea')).toEqual([]);
+  });
+
+  it('finds no resource objects in a document with null data', () => {
+    const document = new JsonApi.Document({ data: null }, context);
+    expect(document.findResourceObjects('measurements', 'mea')).toEqual([]);
+  });
+
+  it('finds a resource object appended to included after an earlier lookup', () => {
+    const rawDocument = makeRawDocument(1);
+    const document = new JsonApi.Document(rawDocument, context);
+    expect(new JsonApi.RelatedResource(document, 'desc0', 'descriptions', context).attributes).toBeDefined();
+
+    rawDocument.included!.push({ type: 'descriptions', id: 'late', attributes: { name: 'late' } });
+
+    expect(new JsonApi.RelatedResource(document, 'late', 'descriptions', context).attributes).toEqual({ name: 'late' });
+  });
+
+  it('finds a resource object that replaced another one in included after an earlier lookup', () => {
+    const rawDocument = makeRawDocument(1);
+    const document = new JsonApi.Document(rawDocument, context);
+    expect(document.findResourceObjects('descriptions', 'desc0')).toHaveLength(1);
+
+    // same array, same length: only the element changed
+    const position = rawDocument.included!.findIndex((resource) => resource.id === 'desc0');
+    rawDocument.included![position] = { type: 'descriptions', id: 'replacement', attributes: { name: 'new' } };
+
+    expect(new JsonApi.RelatedResource(document, 'replacement', 'descriptions', context).attributes).toEqual({
+      name: 'new',
+    });
+    expect(document.findResourceObjects('descriptions', 'desc0')).toEqual([]);
+  });
+
+  it('no longer finds a resource object whose id was changed in place after an earlier lookup', () => {
+    const rawDocument = makeRawDocument(1);
+    const document = new JsonApi.Document(rawDocument, context);
+    const [description] = document.findResourceObjects('descriptions', 'desc0');
+    expect(description).toBeDefined();
+
+    description.id = 'renamed';
+
+    expect(document.findResourceObjects('descriptions', 'desc0')).toEqual([]);
+    expect(document.findResourceObjects('descriptions', 'renamed')).toEqual([description]);
+  });
+
+  it('does not let callers mutate the index through the returned array', () => {
+    const document = new JsonApi.Document(makeRawDocument(1), context);
+    document.findResourceObjects('descriptions', 'desc0').length = 0;
+    expect(document.findResourceObjects('descriptions', 'desc0')).toHaveLength(1);
+  });
+
+  it('still complains when a type/id pair is found more than once', async () => {
+    const rawDocument = makeRawDocument(1);
+    rawDocument.included!.push({ type: 'descriptions', id: 'desc0', attributes: { name: 'duplicate' } });
+    const document = new JsonApi.Document(rawDocument, context);
+    const [dataset] = await document.resource.relatedResources['datasets'];
+    const description = await dataset.relatedResource['description'];
+    expect(() => {
+      description.attributes;
+    }).toThrow(/found more than once/);
+  });
+
+  it('resolves thousands of related resources without scanning the whole document for each', async () => {
+    // 8 000 datasets: 24 000 included resources and 16 000 lookups. The former linear scan
+    // needed several seconds for this; the index needs well under a second.
+    const document = new JsonApi.Document(makeRawDocument(8000), context);
+
+    const started = Date.now();
+    const datasets = await document.resource.relatedResources['datasets'];
+    const resolved: JsonApi.Resource[] = [];
+    for (const dataset of datasets) {
+      resolved.push(await dataset.relatedResource['description'], await dataset.relatedResource['parameters']);
+    }
+    const attributes = resolved.map((resource) => resource.attributes);
+    const elapsed = Date.now() - started;
+
+    expect(attributes).toHaveLength(16000);
+    expect(attributes.every((value) => value !== undefined)).toBe(true);
+    expect(elapsed).toBeLessThan(2500);
+  }, 60000);
+});
