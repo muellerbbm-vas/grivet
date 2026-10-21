@@ -389,21 +389,11 @@ export namespace JsonApi {
     }
   }
 
-  /**
-   * Type/id index over the resource objects of a document, together with what it was built from
-   * @hidden
-   */
-  interface ResourceIndex {
-    data: Spec.JsonApiDocument['data'];
-    included: Spec.ResourceObject[] | undefined;
-    includedLength: number;
-    byKey: Map<string, Spec.ResourceObject[]>;
-  }
+  /** Resource objects of a document by type and id @hidden */
+  type ResourceIndex = Map<string, Map<string, ReadonlyArray<Spec.ResourceObject>>>;
 
-  /** NUL cannot occur in a JSON:API type, so type and id map to one unambiguous key. @hidden */
-  function resourceKey(resourceType: string, id: string): string {
-    return `${resourceType}\u0000${id}`;
-  }
+  /** Result of a lookup that finds no resource object @hidden */
+  const noResourceObjects: ReadonlyArray<Spec.ResourceObject> = Object.freeze([]);
 
   /**
    * Holds an `application/vnd.api+json` [document](https://jsonapi.org/format/1.0/#document-top-level) and
@@ -461,78 +451,48 @@ export namespace JsonApi {
     }
 
     /**
-     * Index of all resource objects in this document by type and id, built on first lookup.
-     * @hidden
-     */
-    private resourceIndex?: ResourceIndex;
-
-    /**
-     * All resource objects in this document with the given type and id, i.e. matching primary resources (those in
+     * All resource objects in this document with the given id and type, i.e. matching primary resources (those in
      * the `data` member) and matching included resources (those in the `included` member). A compliant document
      * contains at most one; an empty array is returned when there is none.
      *
      * The lookup is served from an index that is built on first use, so resolving many related resources of a large
-     * compound document does not scan the whole document for each of them. The index is rebuilt when `rawData.data`
-     * or `rawData.included` was replaced or `rawData.included` changed its length. Mutations that keep identity and
-     * length (e.g. replacing an element of `rawData.included` or changing the `type` or `id` of a resource object)
-     * are not detected up front; instead the index is rebuilt once whenever a lookup misses or the found resource
-     * objects no longer carry the looked-up type and id. A miss therefore costs one scan of the document, as the
-     * lookup did before the index existed. The one remaining blind spot: a resource object that was replaced in
-     * place is still found under its old type and id until some other lookup triggers a rebuild.
-     * @param resourceType The type of the resource objects to look for
+     * compound document does not scan the whole document for each of them. Like the memoized accessors, the index
+     * does not reflect changes made to `rawData` after it was built.
      * @param id The id of the resource objects to look for
+     * @param resourceType The type of the resource objects to look for
      */
-    findResourceObjects(resourceType: string, id: string): Spec.ResourceObject[] {
-      const key = resourceKey(resourceType, id);
-      const matches = this.resourcesByKey().get(key);
-      if (
-        matches !== undefined &&
-        matches.every((resourceObject) => resourceObject.type === resourceType && resourceObject.id === id)
-      ) {
-        return matches.slice();
-      }
-      // A miss or a mutated match may be due to a stale index, so look again in a freshly built one
-      const rebuilt = this.buildResourceIndex().get(key);
-      return rebuilt === undefined ? [] : rebuilt.slice();
+    findResourceObjects(id: string, resourceType: string): ReadonlyArray<Spec.ResourceObject> {
+      const byId = this.resourceIndex.get(resourceType);
+      return (byId && byId.get(id)) || noResourceObjects;
     }
 
-    /** The type/id index, reused while `rawData.data` and `rawData.included` look unchanged @hidden */
-    private resourcesByKey(): Map<string, Spec.ResourceObject[]> {
-      const { data, included } = this.rawData;
-      const includedLength = included === undefined ? 0 : included.length;
-      const index = this.resourceIndex;
-      if (
-        index !== undefined &&
-        index.data === data &&
-        index.included === included &&
-        index.includedLength === includedLength
-      ) {
-        return index.byKey;
-      }
-      return this.buildResourceIndex();
-    }
-
-    /** Builds the type/id index from the current `rawData` and caches it @hidden */
-    private buildResourceIndex(): Map<string, Spec.ResourceObject[]> {
-      const { data, included } = this.rawData;
-      const includedLength = included === undefined ? 0 : included.length;
-      const byKey = new Map<string, Spec.ResourceObject[]>();
-      const primary: Spec.ResourceObject[] = Array.isArray(data)
-        ? data
+    /**
+     * Index of all primary and included resource objects in this document by type and id
+     * @memoized
+     * @hidden
+     */
+    @memoized()
+    private get resourceIndex(): ResourceIndex {
+      const index: ResourceIndex = new Map();
+      const data = this.rawData.data;
+      const primary = Array.isArray(data)
+        ? <Spec.ResourceObject[]>data
         : data === null || data === undefined
         ? []
-        : [data];
-      for (const resourceObject of primary.concat(included || [])) {
-        const key = resourceKey(resourceObject.type, resourceObject.id);
-        const matches = byKey.get(key);
-        if (matches === undefined) {
-          byKey.set(key, [resourceObject]);
-        } else {
-          matches.push(resourceObject);
+        : [<Spec.ResourceObject>data];
+      for (const resourceObjects of [primary, this.rawData.included || []]) {
+        for (const resourceObject of resourceObjects) {
+          let byId = index.get(resourceObject.type);
+          if (byId === undefined) {
+            byId = new Map();
+            index.set(resourceObject.type, byId);
+          }
+          // only a non-compliant document has more than one match, so copying the matches is rare
+          const matches = byId.get(resourceObject.id) || noResourceObjects;
+          byId.set(resourceObject.id, Object.freeze([...matches, resourceObject]));
         }
       }
-      this.resourceIndex = { data, included, includedLength, byKey };
-      return byKey;
+      return index;
     }
 
     /**
@@ -763,7 +723,7 @@ export namespace JsonApi {
      * @throws SchemaError when `rawData` does not look like a [JSON:API resource object](https://jsonapi.org/format/1.0/#document-resource-objects)
      */
     protected getData(): Spec.ResourceObject {
-      const filtered = this.document.findResourceObjects(this.type, this.id);
+      const filtered = this.document.findResourceObjects(this.id, this.type);
       if (filtered.length === 0) {
         throw new IdMismatchError(`Resource with id "${this.id}" and type "${this.type}" not found in document`);
       }

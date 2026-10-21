@@ -1034,60 +1034,46 @@ describe('A large JSON:API compound document', () => {
 
   const context = new TestContext({});
 
-  it('finds resource objects by type and id', () => {
+  it('finds resource objects by id and type', () => {
     const document = new JsonApi.Document(makeRawDocument(3), context);
-    expect(document.findResourceObjects('measurements', 'mea')).toHaveLength(1);
-    expect(document.findResourceObjects('descriptions', 'desc2')[0].attributes).toEqual({ name: 'channel 2' });
-    expect(document.findResourceObjects('descriptions', 'desc3')).toEqual([]);
-    expect(document.findResourceObjects('nothing', 'mea')).toEqual([]);
+    expect(document.findResourceObjects('mea', 'measurements')).toHaveLength(1);
+    expect(document.findResourceObjects('desc2', 'descriptions')[0].attributes).toEqual({ name: 'channel 2' });
+    expect(document.findResourceObjects('desc3', 'descriptions')).toEqual([]);
+    expect(document.findResourceObjects('mea', 'nothing')).toEqual([]);
   });
 
   it('finds no resource objects in a document with null data', () => {
     const document = new JsonApi.Document({ data: null }, context);
-    expect(document.findResourceObjects('measurements', 'mea')).toEqual([]);
+    expect(document.findResourceObjects('mea', 'measurements')).toEqual([]);
   });
 
-  it('finds a resource object appended to included after an earlier lookup', () => {
-    const rawDocument = makeRawDocument(1);
-    const document = new JsonApi.Document(rawDocument, context);
-    expect(new JsonApi.RelatedResource(document, 'desc0', 'descriptions', context).attributes).toBeDefined();
-
-    rawDocument.included!.push({ type: 'descriptions', id: 'late', attributes: { name: 'late' } });
-
-    expect(new JsonApi.RelatedResource(document, 'late', 'descriptions', context).attributes).toEqual({ name: 'late' });
+  it('resolves included resources of a document with null data', () => {
+    const document = new JsonApi.Document(
+      { data: null, included: [{ type: 'articles', id: '1', attributes: { title: 'JSON:API' } }] },
+      context
+    );
+    expect(document.includedResources['articles']['1'].attributes).toEqual({ title: 'JSON:API' });
   });
 
-  it('finds a resource object that replaced another one in included after an earlier lookup', () => {
-    const rawDocument = makeRawDocument(1);
-    const document = new JsonApi.Document(rawDocument, context);
-    expect(document.findResourceObjects('descriptions', 'desc0')).toHaveLength(1);
-
-    // same array, same length: only the element changed
-    const position = rawDocument.included!.findIndex((resource) => resource.id === 'desc0');
-    rawDocument.included![position] = { type: 'descriptions', id: 'replacement', attributes: { name: 'new' } };
-
-    expect(new JsonApi.RelatedResource(document, 'replacement', 'descriptions', context).attributes).toEqual({
-      name: 'new',
-    });
-    expect(document.findResourceObjects('descriptions', 'desc0')).toEqual([]);
-  });
-
-  it('no longer finds a resource object whose id was changed in place after an earlier lookup', () => {
-    const rawDocument = makeRawDocument(1);
-    const document = new JsonApi.Document(rawDocument, context);
-    const [description] = document.findResourceObjects('descriptions', 'desc0');
-    expect(description).toBeDefined();
-
-    description.id = 'renamed';
-
-    expect(document.findResourceObjects('descriptions', 'desc0')).toEqual([]);
-    expect(document.findResourceObjects('descriptions', 'renamed')).toEqual([description]);
+  it('matches type and id exactly', () => {
+    const document = new JsonApi.Document(
+      {
+        data: null,
+        included: [
+          { type: 'numbers', id: <any>9 },
+          { type: 'a\u0000b', id: 'c' },
+        ],
+      },
+      context
+    );
+    expect(document.findResourceObjects('9', 'numbers')).toEqual([]);
+    expect(document.findResourceObjects('b\u0000c', 'a')).toEqual([]);
   });
 
   it('does not let callers mutate the index through the returned array', () => {
     const document = new JsonApi.Document(makeRawDocument(1), context);
-    document.findResourceObjects('descriptions', 'desc0').length = 0;
-    expect(document.findResourceObjects('descriptions', 'desc0')).toHaveLength(1);
+    expect(Object.isFrozen(document.findResourceObjects('desc0', 'descriptions'))).toBe(true);
+    expect(Object.isFrozen(document.findResourceObjects('desc1', 'descriptions'))).toBe(true);
   });
 
   it('still complains when a type/id pair is found more than once', async () => {
@@ -1101,22 +1087,29 @@ describe('A large JSON:API compound document', () => {
     }).toThrow(/found more than once/);
   });
 
-  it('resolves thousands of related resources without scanning the whole document for each', async () => {
-    // 8 000 datasets: 24 000 included resources and 16 000 lookups. The former linear scan
-    // needed several seconds for this; the index needs well under a second.
-    const document = new JsonApi.Document(makeRawDocument(8000), context);
+  it('reads each included resource object only once while resolving thousands of related resources', async () => {
+    // 1 000 datasets: 3 000 included resources and 2 000 lookups. The former linear scan
+    // read all included resources for each lookup.
+    const rawDocument = makeRawDocument(1000);
+    const document = new JsonApi.Document(rawDocument, context);
+    let reads = 0;
+    rawDocument.included = new Proxy(rawDocument.included!, {
+      get(target, property, receiver) {
+        if (typeof property === 'string' && /^\d+$/.test(property)) {
+          reads++;
+        }
+        return Reflect.get(target, property, receiver);
+      },
+    });
 
-    const started = Date.now();
     const datasets = await document.resource.relatedResources['datasets'];
     const resolved: JsonApi.Resource[] = [];
     for (const dataset of datasets) {
       resolved.push(await dataset.relatedResource['description'], await dataset.relatedResource['parameters']);
     }
-    const attributes = resolved.map((resource) => resource.attributes);
-    const elapsed = Date.now() - started;
 
-    expect(attributes).toHaveLength(16000);
-    expect(attributes.every((value) => value !== undefined)).toBe(true);
-    expect(elapsed).toBeLessThan(2500);
-  }, 60000);
+    expect(resolved).toHaveLength(2000);
+    expect(resolved.every((resource) => resource.attributes !== undefined)).toBe(true);
+    expect(reads).toBeLessThanOrEqual(rawDocument.included.length);
+  });
 });
