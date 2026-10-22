@@ -389,6 +389,12 @@ export namespace JsonApi {
     }
   }
 
+  /** Resource objects of a document by type and id @hidden */
+  type ResourceIndex = Map<string, Map<string, ReadonlyArray<Spec.ResourceObject>>>;
+
+  /** Result of a lookup that finds no resource object @hidden */
+  const noResourceObjects: ReadonlyArray<Spec.ResourceObject> = Object.freeze([]);
+
   /**
    * Holds an `application/vnd.api+json` [document](https://jsonapi.org/format/1.0/#document-top-level) and
    * provides methods to access the resources in that document.
@@ -442,6 +448,51 @@ export namespace JsonApi {
       public readonly sparseFields?: SparseFields
     ) {
       Spec.checkDocumentSchema(rawData);
+    }
+
+    /**
+     * All resource objects in this document with the given id and type, i.e. matching primary resources (those in
+     * the `data` member) and matching included resources (those in the `included` member). A compliant document
+     * contains at most one; an empty array is returned when there is none.
+     *
+     * The lookup is served from an index that is built on first use, so resolving many related resources of a large
+     * compound document does not scan the whole document for each of them. Like the memoized accessors, the index
+     * does not reflect changes made to `rawData` after it was built.
+     * @param id The id of the resource objects to look for
+     * @param resourceType The type of the resource objects to look for
+     */
+    findResourceObjects(id: string, resourceType: string): ReadonlyArray<Spec.ResourceObject> {
+      const byId = this.resourceIndex.get(resourceType);
+      return (byId && byId.get(id)) || noResourceObjects;
+    }
+
+    /**
+     * Index of all primary and included resource objects in this document by type and id
+     * @memoized
+     * @hidden
+     */
+    @memoized()
+    private get resourceIndex(): ResourceIndex {
+      const index: ResourceIndex = new Map();
+      const data = this.rawData.data;
+      const primary = Array.isArray(data)
+        ? <Spec.ResourceObject[]>data
+        : data === null || data === undefined
+        ? []
+        : [<Spec.ResourceObject>data];
+      for (const resourceObjects of [primary, this.rawData.included || []]) {
+        for (const resourceObject of resourceObjects) {
+          let byId = index.get(resourceObject.type);
+          if (byId === undefined) {
+            byId = new Map();
+            index.set(resourceObject.type, byId);
+          }
+          // only a non-compliant document has more than one match, so copying the matches is rare
+          const matches = byId.get(resourceObject.id) || noResourceObjects;
+          byId.set(resourceObject.id, Object.freeze([...matches, resourceObject]));
+        }
+      }
+      return index;
     }
 
     /**
@@ -667,18 +718,12 @@ export namespace JsonApi {
 
     /**
      * Looks up the matching resource in the parent {@link Document}. All primary resources (those in the `data` member)
-     * and all included resources (those in the `included` member) are searched.
+     * and all included resources (those in the `included` member) are searched, see {@link Document.findResourceObjects}.
      * @throws {@link IdMismatchError} if the resource is not found or found multiple times
      * @throws SchemaError when `rawData` does not look like a [JSON:API resource object](https://jsonapi.org/format/1.0/#document-resource-objects)
      */
     protected getData(): Spec.ResourceObject {
-      const primaryDataArray = this.document.hasManyResources
-        ? <Spec.ResourceObject[]>this.document.rawData.data
-        : [<Spec.ResourceObject>this.document.rawData.data];
-      const candidates = primaryDataArray.concat(this.document.rawData.included || []);
-      const filtered = candidates.filter(
-        (resourceObject) => resourceObject.type === this.type && resourceObject.id === this.id
-      );
+      const filtered = this.document.findResourceObjects(this.id, this.type);
       if (filtered.length === 0) {
         throw new IdMismatchError(`Resource with id "${this.id}" and type "${this.type}" not found in document`);
       }

@@ -1,0 +1,17 @@
+# Replaces .gitignore when packing, so the built /lib ends up in the package.
+# Without this file yarn 1 applies .gitignore to `pack` (also when installing
+# grivet as a git dependency) and ships only lib/index.js.
+
+# Logs
+logs
+*.log
+
+# Dependency directories
+node_modules/
+
+# Coverage directory used by tools like istanbul
+coverage
+.nyc_output
+
+# Generated documentation
+/docs
