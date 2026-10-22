@@ -998,3 +998,118 @@ describe('A ClientDocument', () => {
     clientDoc.includeResource(resource);
   });
 });
+
+describe('A large JSON:API compound document', () => {
+  // A measurement-like document: `count` datasets, each with a description and parameters,
+  // all of them included. Resolving the related resources must not scan the whole document
+  // for each of them.
+  function makeRawDocument(count: number): Spec.JsonApiDocument {
+    const datasetIds: Spec.ResourceIdentifierObject[] = [];
+    const included: Spec.ResourceObject[] = [];
+    for (let i = 0; i < count; i++) {
+      datasetIds.push({ type: 'datasets', id: `ds${i}` });
+      included.push({
+        type: 'datasets',
+        id: `ds${i}`,
+        relationships: {
+          description: { data: { type: 'descriptions', id: `desc${i}` } },
+          parameters: { data: { type: 'parameters', id: `par${i}` } },
+        },
+      });
+      included.push({ type: 'descriptions', id: `desc${i}`, attributes: { name: `channel ${i}` } });
+      included.push({ type: 'parameters', id: `par${i}`, attributes: { index: i } });
+    }
+    return {
+      data: {
+        type: 'measurements',
+        id: 'mea',
+        relationships: {
+          datasets: { data: datasetIds },
+          self: { data: { type: 'measurements', id: 'mea' } },
+        },
+      },
+      included,
+    };
+  }
+
+  const context = new TestContext({});
+
+  it('finds resource objects by id and type', () => {
+    const document = new JsonApi.Document(makeRawDocument(3), context);
+    expect(document.findResourceObjects('mea', 'measurements')).toHaveLength(1);
+    expect(document.findResourceObjects('desc2', 'descriptions')[0].attributes).toEqual({ name: 'channel 2' });
+    expect(document.findResourceObjects('desc3', 'descriptions')).toEqual([]);
+    expect(document.findResourceObjects('mea', 'nothing')).toEqual([]);
+  });
+
+  it('finds no resource objects in a document with null data', () => {
+    const document = new JsonApi.Document({ data: null }, context);
+    expect(document.findResourceObjects('mea', 'measurements')).toEqual([]);
+  });
+
+  it('resolves included resources of a document with null data', () => {
+    const document = new JsonApi.Document(
+      { data: null, included: [{ type: 'articles', id: '1', attributes: { title: 'JSON:API' } }] },
+      context
+    );
+    expect(document.includedResources['articles']['1'].attributes).toEqual({ title: 'JSON:API' });
+  });
+
+  it('matches type and id exactly', () => {
+    const document = new JsonApi.Document(
+      {
+        data: null,
+        included: [
+          { type: 'numbers', id: <any>9 },
+          { type: 'a\u0000b', id: 'c' },
+        ],
+      },
+      context
+    );
+    expect(document.findResourceObjects('9', 'numbers')).toEqual([]);
+    expect(document.findResourceObjects('b\u0000c', 'a')).toEqual([]);
+  });
+
+  it('does not let callers mutate the index through the returned array', () => {
+    const document = new JsonApi.Document(makeRawDocument(1), context);
+    expect(Object.isFrozen(document.findResourceObjects('desc0', 'descriptions'))).toBe(true);
+    expect(Object.isFrozen(document.findResourceObjects('desc1', 'descriptions'))).toBe(true);
+  });
+
+  it('still complains when a type/id pair is found more than once', async () => {
+    const rawDocument = makeRawDocument(1);
+    rawDocument.included!.push({ type: 'descriptions', id: 'desc0', attributes: { name: 'duplicate' } });
+    const document = new JsonApi.Document(rawDocument, context);
+    const [dataset] = await document.resource.relatedResources['datasets'];
+    const description = await dataset.relatedResource['description'];
+    expect(() => {
+      description.attributes;
+    }).toThrow(/found more than once/);
+  });
+
+  it('reads each included resource object only once while resolving thousands of related resources', async () => {
+    // 1 000 datasets: 3 000 included resources and 2 000 lookups. The former linear scan
+    // read all included resources for each lookup.
+    const rawDocument = makeRawDocument(1000);
+    const document = new JsonApi.Document(rawDocument, context);
+    let reads = 0;
+    rawDocument.included = new Proxy(rawDocument.included!, {
+      get(target, property, receiver) {
+        if (typeof property === 'string' && /^\d+$/.test(property)) {
+          reads++;
+        }
+        return Reflect.get(target, property, receiver);
+      },
+    });
+
+    const datasets = await document.resource.relatedResources['datasets'];
+    const resolved: JsonApi.Resource[] = [];
+    for (const dataset of datasets) {
+      resolved.push(await dataset.relatedResource['description'], await dataset.relatedResource['parameters']);
+    }
+
+    expect(resolved).toHaveLength(2000);
+    expect(resolved.every((resource) => resource.attributes !== undefined)).toBe(true);
+    expect(reads).toBeLessThanOrEqual(rawDocument.included.length);
+  });
+});
