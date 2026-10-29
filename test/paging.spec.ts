@@ -290,3 +290,80 @@ describe('A to-many relationship with resource linkage', () => {
     expect(ids(await relationship.resources())).toEqual(['1', '2', '3', '4', '5', '6']);
   });
 });
+
+describe('Relative links', () => {
+  it('resolve against the full document URL', async () => {
+    const context = new RecordingContext({
+      '/api/comments': (url) =>
+        url.searchParams.get('page[number]') === '3'
+          ? { data: [comment('3')] }
+          : url.searchParams.get('page[number]') === '2'
+          ? { data: [comment('2')], links: { next: { href: 'comments?page[number]=3' } } }
+          : { data: [comment('1')], links: { next: '?page[number]=2' } },
+    });
+    const doc = await JsonApi.Document.fromURL(new URL(`${base}/api/comments`), context);
+    const second = await doc.nextPage();
+    expect(second!.url!.href).toBe(`${base}/api/comments?page[number]=2`);
+    const third = await second!.nextPage();
+    expect(third!.url!.href).toBe(`${base}/api/comments?page[number]=3`);
+  });
+});
+
+describe('Sparse field options with resource linkage', () => {
+  function context(commentAttributes: Spec.AttributesObject, links?: Spec.LinksObject) {
+    return new RecordingContext({
+      '/articles/1': () => ({
+        data: {
+          type: 'articles',
+          id: '1',
+          relationships: { comments: { data: [{ type: 'comments', id: '1' }], ...(links ? { links } : {}) } },
+        },
+        included: [
+          {
+            type: 'comments',
+            id: '1',
+            attributes: commentAttributes,
+            relationships: { author: { links: { related: `${base}/people/9` } } },
+          },
+        ],
+      }),
+      '/comments': () => ({
+        data: [
+          {
+            type: 'comments',
+            id: '1',
+            attributes: { text: 'fetched', created: 'today' },
+            relationships: { author: { links: { related: `${base}/people/9` } } },
+          },
+        ],
+      }),
+      '/people/9': () => ({ data: { type: 'people', id: '9', attributes: { email: 'a@b.c' } } }),
+    });
+  }
+
+  it('apply to documents fetched from resources resolved by linkage', async () => {
+    const ctx = context({ text: 'included' });
+    const doc = await JsonApi.Document.fromURL(new URL(`${base}/articles/1`), ctx, { people: ['name'] });
+    const comments = await doc.resource!.relationships['comments'].resources({ sparseFields: { people: ['email'] } });
+    expect(comments[0].attributes!['text']).toBe('included');
+    await comments[0].relatedResource['author'];
+    expect(ctx.requested[ctx.requested.length - 1].searchParams.get('fields[people]')).toBe('email');
+  });
+
+  it('use the related link if the included resources lack requested fields', async () => {
+    const ctx = context({ text: 'included' }, { related: `${base}/comments` });
+    const doc = await JsonApi.Document.fromURL(new URL(`${base}/articles/1`), ctx);
+    const comments = await doc.resource!.relationships['comments'].resources({
+      sparseFields: { comments: ['created'] },
+    });
+    expect(comments[0].attributes!['text']).toBe('fetched');
+    expect(ctx.requested[1].searchParams.get('fields[comments]')).toBe('created');
+  });
+
+  it('need a related link if the included resources lack requested fields', async () => {
+    const ctx = context({ text: 'included' });
+    const doc = await JsonApi.Document.fromURL(new URL(`${base}/articles/1`), ctx);
+    const relationship = doc.resource!.relationships['comments'];
+    await expect(relationship.resources({ sparseFields: { comments: ['created'] } })).rejects.toThrowError(SchemaError);
+  });
+});

@@ -28,7 +28,8 @@ const unpaged = await comments.resources({ allowPaging: false }); // throws a Pa
 always use the `related` link, since resource linkage keeps the server's order and has no pages. A non-empty `page` replaces
 the paging parameters of the link (e.g. a cursor), with `replacePage: false` it only overrides the given members. Other
 query parameters of the link are kept. `sparseFields` replaces the sparse fields of the referring document for the given
-types. Which sort fields and page members are supported depends on the server.
+types. Resource linkage is only used with `sparseFields` if the included resources contain all requested fields. Which
+sort fields and page members are supported depends on the server.
 
 `Relationship.relatedDocument()` takes the same `sparseFields`, `sort`, `page` and `replacePage` options, but only fetches the
 requested page.

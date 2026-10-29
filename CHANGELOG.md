@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - `null` links (e.g. `"next": null` on the last page) no longer throw when reading the links of a relationship.
+- Relative links are resolved against the full document URL as described in RFC 3986. Before, only the origin was
+  prepended, which broke query-relative (`?page[number]=2`) and path-relative (`comments`) links. Absolute and
+  root-relative links are resolved as before.
 
 ## [v0.1.0](https://github.com/muellerbbm-vas/grivet/compare/v0.0.9...v0.1.0) - 2026-10-22
 

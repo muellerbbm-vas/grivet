@@ -1076,23 +1076,13 @@ export namespace JsonApi {
 
     /**
      * @param rawData Can be a string containing an href or a {@link Spec.LinkObject}
-     * @param referringDocumentURL The _origin_ part of this URL will be used as prefix if `rawData` only refers to a
-     * pathname and not a full URL
+     * @param referringDocumentURL A relative href (e.g. `/articles/1`, `comments` or `?page[number]=2`) is resolved
+     * against this URL as described in [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html#section-5)
      */
     constructor(rawData: Spec.Link, referringDocumentURL?: URL) {
-      const origin = referringDocumentURL ? referringDocumentURL.origin : '';
-      if (typeof rawData === 'string') {
-        try {
-          this.url = new URL(rawData);
-        } catch (e) {
-          this.url = new URL(origin + rawData);
-        }
-      } else {
-        try {
-          this.url = new URL(rawData.href);
-        } catch (e) {
-          this.url = new URL(origin + rawData.href);
-        }
+      const href = typeof rawData === 'string' ? rawData : rawData.href;
+      this.url = referringDocumentURL ? new URL(href, referringDocumentURL.href) : new URL(href);
+      if (typeof rawData !== 'string') {
         this.meta = rawData.meta;
       }
     }
@@ -1240,6 +1230,9 @@ export namespace JsonApi {
      *
      * Linkage keeps the server's order and has no pages, so `sort` or `page` options always use the `related` link.
      * Linkage with pagination links in the relationship is not used either, since it may be incomplete.
+     * With a `sparseFields` option, linkage is only used if the included resources contain all requested fields of
+     * their type (an empty list only needs the identifier); documents fetched from these resources then use the
+     * requested fields. Otherwise the `related` link is used.
      *
      * By default, the `next` links of the related document are followed until the last page. With
      * `followPaging: false`, only the requested page is returned. With `allowPaging: false`, a paged response
@@ -1298,6 +1291,29 @@ export namespace JsonApi {
       return resources;
     }
 
+    /**
+     * `true` if the referring document contains every linked resource with all fields requested for its type.
+     * An empty field list only needs the resource identifier, like in grivetpy.
+     * @hidden
+     */
+    private linkageProvidesFields(
+      resourceIdentifiers: Spec.ResourceIdentifierObject[],
+      sparseFields: SparseFields,
+    ): boolean {
+      return resourceIdentifiers.every((rid) => {
+        if (!(rid.type in sparseFields) || sparseFields[rid.type].length === 0) {
+          return true;
+        }
+        const fieldNames = sparseFields[rid.type];
+        const resourceObjects = this.referringDocument.findResourceObjects(rid.id, rid.type);
+        if (resourceObjects.length !== 1) {
+          return false;
+        }
+        const { attributes = {}, relationships = {} } = resourceObjects[0];
+        return fieldNames.every((name) => name in attributes || name in relationships);
+      });
+    }
+
     /** @hidden */
     private async resolveResources(options: RelatedResourcesOptions): Promise<Resource[]> {
       const sortOrPage =
@@ -1318,10 +1334,28 @@ export namespace JsonApi {
               'Relationship does not contain an array of resources. Use the `resource` method instead.'
             );
           }
-          return Promise.resolve(
-            resourceIdentifiers.map(
-              (rid) => new RelatedResource(this.referringDocument, rid.id, rid.type, this.context)
-            )
+          const sparseFields = options.sparseFields;
+          if (sparseFields === undefined || Object.keys(sparseFields).length === 0) {
+            return Promise.resolve(
+              resourceIdentifiers.map(
+                (rid) => new RelatedResource(this.referringDocument, rid.id, rid.type, this.context)
+              )
+            );
+          }
+          if (this.linkageProvidesFields(resourceIdentifiers, sparseFields)) {
+            // The resources come from the referring document, but documents fetched from them use the requested fields
+            const view = new Document(this.referringDocument.rawData, this.context, this.referringDocument.url, {
+              ...this.referringDocument.sparseFields,
+              ...sparseFields,
+            });
+            return resourceIdentifiers.map((rid) => new RelatedResource(view, rid.id, rid.type, this.context));
+          }
+          const fetched = await this.resourcesOfRelatedDocument(options);
+          if (fetched) {
+            return fetched;
+          }
+          throw new SchemaError(
+            'The included resources lack requested sparse fields and the relationship has no `links.related` member'
           );
         }
       }
