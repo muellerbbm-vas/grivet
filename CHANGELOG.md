@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - `QueryParams` builds query parameters (`include`, `fields`, `sort`, `filter`, `page` and custom ones). `Document.fromURL`
-  takes them as optional fourth argument.
+  takes them as optional fourth argument. A nested filter key can be given as a path, e.g.
+  `filter(['simple', 'primary', 'id__in'], '1,2')` for `filter[simple][primary][id__in]=1,2`.
 - `Document.links` and paging: `nextPage()`, `prevPage()`, `firstPage()`, `lastPage()`, `allPages()` and `allResources()`.
 - `Relationship.relatedDocument()`, `resources()` and `resourcesFromRelatedLink()` take options for sparse fields, sorting
   (`sort`) and paging (`page`, `replacePage`, `allowPaging`, `followPaging`). `PagingNotAllowedError` is thrown for a

@@ -76,6 +76,26 @@ describe('QueryParams', () => {
     ]);
   });
 
+  it('builds nested filter keys from a path', () => {
+    const params = new JsonApi.QueryParams().filter(['simple', 'primary', 'id__in'], '1,2').filter(['author'], 5);
+    expect(params.entries()).toEqual([
+      ['filter[simple][primary][id__in]', '1,2'],
+      ['filter[author]', '5'],
+    ]);
+    expect(params.entries()).toEqual(
+      new JsonApi.QueryParams().filter('simple][primary][id__in', '1,2').filter('author', 5).entries(),
+    );
+  });
+
+  it.each([[[]], [['simple', '']], [['simple]', 'name']], [['simple', '[name']], [['simple', 1]]])(
+    'rejects the filter path %j',
+    (path) => {
+      const params = new JsonApi.QueryParams();
+      expect(() => params.filter(<string[]>path, 'x')).toThrow(TypeError);
+      expect(params.isEmpty).toBe(true);
+    },
+  );
+
   it('merges lists without duplicates or replaces them', () => {
     const params = new JsonApi.QueryParams().sort(['a', 'b']).sort(['b', 'c']).include(['x']);
     expect(params.entries()).toEqual([

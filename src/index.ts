@@ -112,9 +112,14 @@ export namespace JsonApi {
       return this.mergeList('sort', fields, replace);
     }
 
-    /** Adds `filter[key]=value`, `key` may contain brackets itself. The filter syntax depends on the server. */
-    filter(key: string, value: QueryParamValue): this {
-      this.pairs.push([`filter[${key}]`, String(value)]);
+    /**
+     * Adds `filter[key]=value`. The filter syntax depends on the server.
+     * @param key A string, which may contain brackets itself (`'simple][primary][id__in'`), or a path of segments:
+     * `filter(['simple', 'primary', 'id__in'], '1,2')` adds `filter[simple][primary][id__in]=1,2`.
+     * @throws TypeError if a path is empty or a segment is not a non-empty string without brackets
+     */
+    filter(key: string | ReadonlyArray<string>, value: QueryParamValue): this {
+      this.pairs.push([filterKey(key), String(value)]);
       return this;
     }
 
@@ -189,6 +194,24 @@ export namespace JsonApi {
   /** @hidden */
   function unique(values: string[]): string[] {
     return values.filter((value, index) => values.indexOf(value) === index);
+  }
+
+  /** @hidden */
+  function filterKey(key: string | ReadonlyArray<string>): string {
+    if (typeof key === 'string') {
+      return `filter[${key}]`;
+    }
+    if (!Array.isArray(key) || key.length === 0) {
+      throw new TypeError('A filter path needs at least one segment');
+    }
+    for (const segment of key) {
+      if (typeof segment !== 'string' || segment === '' || segment.includes('[') || segment.includes(']')) {
+        throw new TypeError(
+          `Filter path segments must be non-empty strings without brackets: ${JSON.stringify(segment)}`,
+        );
+      }
+    }
+    return `filter[${key.join('][')}]`;
   }
 
   /**
