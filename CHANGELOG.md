@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `Relationship.relatedDocument()`, `resources()` and `resourcesFromRelatedLink()` take options for sparse fields, sorting
   (`sort`) and paging (`page`, `replacePage`, `allowPaging`, `followPaging`). `PagingNotAllowedError` is thrown for a
   paged response with `allowPaging: false`.
+- A context can implement the optional `Context.getDocumentWithURL()` to also return the URL a document was received
+  from, e.g. after redirects. `Document.effectiveURL` is that URL, or else `Document.url`, and relative links are
+  resolved against it.
 
 ### Changed
 
@@ -28,9 +31,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - `null` links (e.g. `"next": null` on the last page) no longer throw when reading the links of a relationship.
-- Relative links are resolved against the full document URL as described in RFC 3986. Before, only the origin was
-  prepended, which broke query-relative (`?page[number]=2`) and path-relative (`comments`) links. Absolute and
-  root-relative links are resolved as before.
+- Relative links are resolved against the full document URL (`Document.effectiveURL`) as described in RFC 3986. Before,
+  only the origin was prepended, which broke query-relative (`?page[number]=2`) and path-relative (`comments`) links.
+  Absolute and root-relative links are resolved as before.
 
 ## [v0.1.0](https://github.com/muellerbbm-vas/grivet/compare/v0.0.9...v0.1.0) - 2026-10-22
 

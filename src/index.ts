@@ -49,6 +49,28 @@ export namespace JsonApi {
      * Should return a `Promise` resolving to the JSON:API document for the given `url`
      */
     getDocument(url: URL): Promise<Spec.JsonApiDocument>;
+    /**
+     * Optional: like {@link getDocument}, but also returns the URL the document was received from, e.g. after redirects
+     * (`Response.url` of `fetch`). If implemented, it is used instead of `getDocument`, and relative links are resolved
+     * against that URL (see {@link Document.effectiveURL}).
+     */
+    getDocumentWithURL?(url: URL): Promise<DocumentWithURL>;
+  }
+
+  /** A JSON:API document and the URL it was received from, see {@link Context.getDocumentWithURL} */
+  export interface DocumentWithURL {
+    /** The JSON:API document */
+    rawData: Spec.JsonApiDocument;
+    /** The absolute URL the document was received from, e.g. after redirects. `undefined` if unknown. */
+    url?: URL;
+  }
+
+  /** @hidden */
+  async function fetchDocument(context: Context, url: URL): Promise<DocumentWithURL> {
+    if (context.getDocumentWithURL) {
+      return context.getDocumentWithURL(url);
+    }
+    return { rawData: await context.getDocument(url) };
   }
 
   /** List of fields that should be fetched from the server */
@@ -374,7 +396,7 @@ export namespace JsonApi {
       }
       const result: Links = {};
       for (const linkName in this.rawData.links) {
-        result[linkName] = new Link(this.rawData.links[linkName], this.document.url);
+        result[linkName] = new Link(this.rawData.links[linkName], this.document.effectiveURL);
       }
       return result;
     }
@@ -394,7 +416,7 @@ export namespace JsonApi {
       }
       const result: Links = {};
       for (const linkName in this.rawData.meta.links) {
-        result[linkName] = new Link(this.rawData.meta.links[linkName], this.document.url);
+        result[linkName] = new Link(this.rawData.meta.links[linkName], this.document.effectiveURL);
       }
       return result;
     }
@@ -683,8 +705,8 @@ export namespace JsonApi {
       if (params) {
         requestURL = params.applyTo(requestURL);
       }
-      const rawData = await context.getDocument(requestURL);
-      return new Document(rawData, context, requestURL, sparseFields);
+      const fetched = await fetchDocument(context, requestURL);
+      return new Document(fetched.rawData, context, requestURL, sparseFields, fetched.url);
     }
 
     /**
@@ -693,15 +715,26 @@ export namespace JsonApi {
      * @param context The context to use to fetch related documents (not used during the initial construction)
      * @param url An optional URL can be provided to indicate where the raw data came from
      * @param sparseFields An object listing [sparse fieldsets](https://jsonapi.org/format/1.0/#fetching-sparse-fieldsets) for subsequent fetch operations
+     * @param responseURL The URL the raw data was received from if it differs from `url`, e.g. after redirects
      * @throws SchemaError when the given rawData does not look like a JSON:API document
      */
     constructor(
       readonly rawData: Spec.JsonApiDocument,
       private readonly context: Context,
       public readonly url?: URL,
-      public readonly sparseFields?: SparseFields
+      public readonly sparseFields?: SparseFields,
+      private readonly responseURL?: URL,
     ) {
       Spec.checkDocumentSchema(rawData);
+    }
+
+    /**
+     * The URL this document was received from, e.g. after redirects, if the context tells it
+     * ({@link Context.getDocumentWithURL}); otherwise {@link url}, the requested URL. Relative links of the document are
+     * resolved against it.
+     */
+    get effectiveURL(): URL | undefined {
+      return this.responseURL || this.url;
     }
 
     /**
@@ -888,7 +921,7 @@ export namespace JsonApi {
       for (const linkName in rawLinks) {
         const rawLink = rawLinks[linkName];
         if (rawLink !== null && rawLink !== undefined) {
-          result[linkName] = new Link(rawLink, this.url);
+          result[linkName] = new Link(rawLink, this.effectiveURL);
         }
       }
       return result;
@@ -967,8 +1000,8 @@ export namespace JsonApi {
       }
       // The link already contains the query parameters of the page, including the sparse fields
       const url = new URL(this.links[linkName].url.href);
-      const rawData = await this.context.getDocument(url);
-      return new Document(rawData, this.context, url, this.sparseFields);
+      const fetched = await fetchDocument(this.context, url);
+      return new Document(fetched.rawData, this.context, url, this.sparseFields, fetched.url);
     }
   }
 
@@ -1100,7 +1133,8 @@ export namespace JsonApi {
     /**
      * @param rawData Can be a string containing an href or a {@link Spec.LinkObject}
      * @param referringDocumentURL A relative href (e.g. `/articles/1`, `comments` or `?page[number]=2`) is resolved
-     * against this URL as described in [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html#section-5)
+     * against this URL as described in [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html#section-5), normally
+     * the {@link Document.effectiveURL} of the document that contains the link
      */
     constructor(rawData: Spec.Link, referringDocumentURL?: URL) {
       const href = typeof rawData === 'string' ? rawData : rawData.href;
@@ -1165,7 +1199,7 @@ export namespace JsonApi {
       for (const linkName in rawLinks) {
         const rawLink = rawLinks[linkName];
         if (rawLink !== null && rawLink !== undefined) {
-          result[linkName] = new Link(rawLink, this.referringDocument.url);
+          result[linkName] = new Link(rawLink, this.referringDocument.effectiveURL);
         }
       }
       return result;
@@ -1367,10 +1401,13 @@ export namespace JsonApi {
           }
           if (this.linkageProvidesFields(resourceIdentifiers, sparseFields)) {
             // The resources come from the referring document, but documents fetched from them use the requested fields
-            const view = new Document(this.referringDocument.rawData, this.context, this.referringDocument.url, {
-              ...this.referringDocument.sparseFields,
-              ...sparseFields,
-            });
+            const view = new Document(
+              this.referringDocument.rawData,
+              this.context,
+              this.referringDocument.url,
+              { ...this.referringDocument.sparseFields, ...sparseFields },
+              this.referringDocument.effectiveURL,
+            );
             return resourceIdentifiers.map((rid) => new RelatedResource(view, rid.id, rid.type, this.context));
           }
           const fetched = await this.resourcesOfRelatedDocument(options);

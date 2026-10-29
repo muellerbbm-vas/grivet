@@ -327,6 +327,42 @@ describe('Relative links', () => {
     const third = await second!.nextPage();
     expect(third!.url!.href).toBe(`${base}/api/comments?page[number]=3`);
   });
+
+  /** Redirects `/api/comments` to `/api/comments/` like `fetch` does, and reports the URL it was received from */
+  class RedirectingContext extends RecordingContext implements JsonApi.Context {
+    async getDocumentWithURL(url: URL): Promise<JsonApi.DocumentWithURL> {
+      const received = url.pathname === '/api/comments' ? new URL(`${base}/api/comments/`) : url;
+      return { rawData: await this.getDocument(received), url: received };
+    }
+  }
+
+  it('resolve against the URL the context reports, e.g. after redirects', async () => {
+    const context = new RedirectingContext({
+      '/api/comments/': () => ({
+        data: [{ ...comment('1'), relationships: { author: { links: { related: 'authors/1' } } } }],
+        links: { next: 'page2' },
+      }),
+      '/api/comments/page2': () => ({ data: [comment('2')] }),
+    });
+    const doc = await JsonApi.Document.fromURL(new URL(`${base}/api/comments`), context);
+    expect(doc.url!.href).toBe(`${base}/api/comments`);
+    expect(doc.effectiveURL!.href).toBe(`${base}/api/comments/`);
+    expect(doc.resources[0].relationships['author'].links!['related'].url.href).toBe(`${base}/api/comments/authors/1`);
+    expect(ids(await doc.allResources())).toEqual(['1', '2']);
+    expect(context.requested.map((url) => url.href)).toEqual([`${base}/api/comments/`, `${base}/api/comments/page2`]);
+  });
+
+  it('resolve against the requested URL without a reported URL', async () => {
+    const withoutURL: JsonApi.Context = {
+      getDocument: () => Promise.reject('getDocumentWithURL must be used'),
+      getDocumentWithURL: async () => ({ rawData: { data: [], links: { next: '?page[number]=2' } } }),
+    };
+    const doc = await JsonApi.Document.fromURL(new URL(`${base}/api/comments`), withoutURL);
+    expect(doc.effectiveURL!.href).toBe(`${base}/api/comments`);
+    expect(doc.links['next'].url.href).toBe(`${base}/api/comments?page[number]=2`);
+    const plain = new JsonApi.Document({ data: [] }, withoutURL, new URL(`${base}/x`));
+    expect(plain.effectiveURL!.href).toBe(`${base}/x`);
+  });
 });
 
 describe('Sparse field options with resource linkage', () => {
