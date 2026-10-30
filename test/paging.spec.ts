@@ -193,6 +193,47 @@ describe('A paged document', () => {
   });
 });
 
+describe('Large pages', () => {
+  const pageSize = 150000;
+
+  it('collects a document page above the function argument limit', async () => {
+    const context = new RecordingContext({ '/last': () => ({ data: [comment('last')] }) });
+    const doc = new JsonApi.Document(
+      {
+        data: Array.from({ length: pageSize }, (_, index) => comment(String(index))),
+        links: { next: `${base}/last` },
+      },
+      context,
+    );
+    const resources = await doc.allResources();
+    expect(resources).toHaveLength(pageSize + 1);
+    expect(resources[0].id).toBe('0');
+    expect(resources[pageSize - 1].id).toBe(String(pageSize - 1));
+    expect(resources[pageSize].id).toBe('last');
+    expect(context.requested.map((url) => url.href)).toEqual([`${base}/last`]);
+  });
+
+  it('collects a large later page of a related document', async () => {
+    const { context, relationship } = await articleResource(
+      { links: { related: `${base}/comments` } },
+      (url) =>
+        url.searchParams.has('page[number]')
+          ? { data: Array.from({ length: pageSize }, (_, index) => comment(String(index))) }
+          : { data: [comment('first')], links: { next: `${base}/comments?page[number]=2` } },
+    );
+    const resources = await relationship.resources();
+    expect(resources).toHaveLength(pageSize + 1);
+    expect(resources[0].id).toBe('first');
+    expect(resources[1].id).toBe('0');
+    expect(resources[pageSize].id).toBe(String(pageSize - 1));
+    expect(context.requested.map((url) => url.href)).toEqual([
+      `${base}/articles/1`,
+      `${base}/comments`,
+      `${base}/comments?page[number]=2`,
+    ]);
+  });
+});
+
 describe('A to-many relationship with a paged related document', () => {
   const related = { links: { related: `${base}/comments` } };
 
@@ -289,6 +330,24 @@ describe('A to-many relationship with resource linkage', () => {
     const { context, relationship } = await articleResource(linkage);
     expect(ids(await relationship.resources())).toEqual(['9']);
     expect(context.requested.length).toBe(1);
+  });
+
+  it('uses included linkage without resolving unused relative links or null paging links', async () => {
+    const context = new RecordingContext({});
+    const doc = new JsonApi.Document(
+      {
+        ...article({
+          data: [{ type: 'comments', id: '9' }],
+          links: { related: 'comments', self: { href: 'relationships/comments' }, next: null, prev: null },
+        }),
+        included: [comment('9')],
+      },
+      context,
+    );
+    const resources = await doc.resource!.relationships['comments'].resources();
+    expect(ids(resources)).toEqual(['9']);
+    expect(resources[0].attributes!['text']).toBe('comment 9');
+    expect(context.requested).toHaveLength(0);
   });
 
   it('uses the related link for sort and page', async () => {

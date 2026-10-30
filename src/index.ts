@@ -988,7 +988,9 @@ export namespace JsonApi {
     async allResources(): Promise<PrimaryResource[]> {
       const resources: PrimaryResource[] = [];
       for (const page of await this.allPages()) {
-        resources.push(...page.resources);
+        for (const resource of page.resources) {
+          resources.push(resource);
+        }
       }
       return resources;
     }
@@ -1318,7 +1320,10 @@ export namespace JsonApi {
 
     /** @hidden */
     private get linkageIsPaged(): boolean {
-      return Object.keys(this.links || {}).some(isPagingLink);
+      const links = this.rawData.links || {};
+      return Object.keys(links).some(
+        (name) => isPagingLink(name) && links[name] !== null && links[name] !== undefined,
+      );
     }
 
     /** @hidden */
@@ -1342,7 +1347,9 @@ export namespace JsonApi {
       }
       const resources: Resource[] = [];
       while (page) {
-        resources.push(...page.resources);
+        for (const resource of page.resources) {
+          resources.push(resource);
+        }
         page = hasNextLink(page) ? await page.nextPage() : undefined;
       }
       return resources;
