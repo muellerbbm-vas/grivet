@@ -1320,7 +1320,7 @@ export namespace JsonApi {
 
     /** @hidden */
     private get linkageIsPaged(): boolean {
-      const links = this.rawData.links || {};
+      const links: { [linkName: string]: Spec.Link | null | undefined } = this.rawData.links || {};
       return Object.keys(links).some(
         (name) => isPagingLink(name) && links[name] !== null && links[name] !== undefined,
       );
