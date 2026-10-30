@@ -49,12 +49,275 @@ export namespace JsonApi {
      * Should return a `Promise` resolving to the JSON:API document for the given `url`
      */
     getDocument(url: URL): Promise<Spec.JsonApiDocument>;
+    /**
+     * Optional: like {@link getDocument}, but also returns the URL the document was received from, e.g. after redirects
+     * (`Response.url` of `fetch`). If implemented, it is used instead of `getDocument`, and relative links are resolved
+     * against that URL (see {@link Document.effectiveURL}).
+     */
+    getDocumentWithURL?(url: URL): Promise<DocumentWithURL>;
+  }
+
+  /** A JSON:API document and the URL it was received from, see {@link Context.getDocumentWithURL} */
+  export interface DocumentWithURL {
+    /** The JSON:API document */
+    rawData: Spec.JsonApiDocument;
+    /** The absolute URL the document was received from, e.g. after redirects. `undefined` if unknown. */
+    url?: URL;
+  }
+
+  /** @hidden */
+  async function fetchDocument(context: Context, url: URL): Promise<DocumentWithURL> {
+    if (context.getDocumentWithURL) {
+      return context.getDocumentWithURL(url);
+    }
+    return { rawData: await context.getDocument(url) };
   }
 
   /** List of fields that should be fetched from the server */
   export type FieldNames = string[];
   /** Mapping from resource type to sparse fields */
   export type SparseFields = { [resourceType: string]: FieldNames };
+
+  /** Value of a query parameter, booleans are sent as `true`/`false` */
+  export type QueryParamValue = string | number | boolean;
+
+  /** Members of the [`page` query parameter family](https://jsonapi.org/format/1.0/#fetching-pagination), e.g. `{ size: 50 }` for `page[size]=50` */
+  export type PageParams = { [member: string]: QueryParamValue };
+
+  /** Thrown when a collection is paged although `allowPaging: false` was requested */
+  export class PagingNotAllowedError extends Error {
+    constructor(message?: string) {
+      super(message);
+      //tslint:disable:no-unsafe-any
+      Object.setPrototypeOf(this, new.target.prototype);
+    }
+  }
+
+  /**
+   * Builder for JSON:API query parameters.
+   *
+   * Standard JSON:API members (`include`, `fields[type]`, `sort`, `filter[...]`, `page[...]`) are first-class, other
+   * parameters can be added with {@link custom}. The builder methods change this instance and return it for chaining,
+   * {@link merge} and {@link copy} return a new instance.
+   *
+   * [[include:guides/queryParams.md]]
+   */
+  export class QueryParams {
+    private pairs: [string, string][];
+
+    /** @param pairs Initial parameters as `[key, value]` pairs */
+    constructor(pairs: ReadonlyArray<[string, QueryParamValue]> = []) {
+      this.pairs = pairs.map(([key, value]) => <[string, string]>[key, String(value)]);
+    }
+
+    /**
+     * Adds paths to `include=path1,path2` (without duplicates, in order).
+     * @param replace Replace the include list instead of merging. `include([''], true)` requests `include=` explicitly.
+     */
+    include(paths: string[], replace = false): this {
+      return this.mergeList('include', paths, replace);
+    }
+
+    /**
+     * Adds field names to the [sparse fieldset](https://jsonapi.org/format/1.0/#fetching-sparse-fieldsets) `fields[type]=a,b`.
+     * @param replace Replace the field list of this type instead of merging. `fields(type, [''], true)` requests `fields[type]=` explicitly.
+     */
+    fields(resourceType: string, fieldNames: FieldNames, replace = false): this {
+      return this.mergeList(`fields[${resourceType}]`, fieldNames, replace);
+    }
+
+    /**
+     * Adds [sort fields](https://jsonapi.org/format/1.0/#fetching-sorting) to `sort=-created,title`, a `-` prefix sorts descending.
+     * @param replace Replace the sort list instead of merging
+     */
+    sort(fields: string[], replace = false): this {
+      return this.mergeList('sort', fields, replace);
+    }
+
+    /**
+     * Adds `filter[key]=value`. The filter syntax depends on the server.
+     * @param key A string, which may contain brackets itself (`'simple][primary][id__in'`), or a path of segments:
+     * `filter(['simple', 'primary', 'id__in'], '1,2')` adds `filter[simple][primary][id__in]=1,2`.
+     * @throws TypeError if a path is empty or a segment is not a non-empty string without brackets
+     */
+    filter(key: string | ReadonlyArray<string>, value: QueryParamValue): this {
+      this.pairs.push([filterKey(key), String(value)]);
+      return this;
+    }
+
+    /** Adds `page[key]=value`. The page members depend on the server. */
+    page(key: string, value: QueryParamValue): this {
+      this.pairs.push([`page[${key}]`, String(value)]);
+      return this;
+    }
+
+    /** Adds `key=value` as given */
+    custom(key: string, value: QueryParamValue): this {
+      this.pairs.push([key, String(value)]);
+      return this;
+    }
+
+    /** A new instance with the parameters of this one followed by those of `other` */
+    merge(other: QueryParams): QueryParams {
+      return new QueryParams([...this.pairs, ...other.pairs]);
+    }
+
+    /** An independent copy */
+    copy(): QueryParams {
+      return new QueryParams(this.pairs);
+    }
+
+    /** `true` if there are no parameters */
+    get isEmpty(): boolean {
+      return this.pairs.length === 0;
+    }
+
+    /** The parameters as `[key, value]` pairs */
+    entries(): [string, string][] {
+      return this.pairs.map(([key, value]) => <[string, string]>[key, value]);
+    }
+
+    /** A copy of `url` with these parameters appended to its query, existing parameters are kept */
+    applyTo(url: URL): URL {
+      const result = new URL(url.href);
+      for (const [key, value] of this.pairs) {
+        result.searchParams.append(key, value);
+      }
+      return result;
+    }
+
+    /** @hidden */
+    private mergeList(key: string, values: string[], replace: boolean): this {
+      const explicitlyEmpty = replace && values.length > 0 && values.every((value) => value === '');
+      const newValues = values.filter((value) => value !== '');
+      if (replace) {
+        this.pairs = this.pairs.filter(([existingKey]) => existingKey !== key);
+        if (explicitlyEmpty) {
+          this.pairs.push([key, '']);
+        } else if (newValues.length > 0) {
+          this.pairs.push([key, unique(newValues).join(',')]);
+        }
+        return this;
+      }
+      if (newValues.length === 0) {
+        return this;
+      }
+      const index = this.pairs.findIndex(([existingKey]) => existingKey === key);
+      if (index >= 0) {
+        const existing = this.pairs[index][1];
+        this.pairs[index] = [key, unique([...(existing !== '' ? existing.split(',') : []), ...newValues]).join(',')];
+      } else {
+        this.pairs.push([key, unique(newValues).join(',')]);
+      }
+      return this;
+    }
+  }
+
+  /** @hidden */
+  function unique(values: string[]): string[] {
+    return values.filter((value, index) => values.indexOf(value) === index);
+  }
+
+  /** @hidden */
+  function filterKey(key: string | ReadonlyArray<string>): string {
+    if (typeof key === 'string') {
+      return `filter[${key}]`;
+    }
+    if (!Array.isArray(key) || key.length === 0) {
+      throw new TypeError('A filter path needs at least one segment');
+    }
+    for (const segment of key) {
+      if (typeof segment !== 'string' || segment === '' || segment.includes('[') || segment.includes(']')) {
+        throw new TypeError(
+          `Filter path segments must be non-empty strings without brackets: ${JSON.stringify(segment)}`,
+        );
+      }
+    }
+    return `filter[${key.join('][')}]`;
+  }
+
+  /**
+   * Options for fetching the `related` link of a {@link Relationship}
+   *
+   * [[include:guides/paging.md]]
+   */
+  export interface RelatedDocumentOptions {
+    /** Sparse fields per type, replacing those of the referring document for these types */
+    sparseFields?: SparseFields;
+    /** [Sort fields](https://jsonapi.org/format/1.0/#fetching-sorting), a `-` prefix sorts descending */
+    sort?: string[];
+    /** Members of the `page` query parameter family for the first request, e.g. `{ size: 50 }` */
+    page?: PageParams;
+    /**
+     * A non-empty `page` replaces all `page` parameters of the link (default). With `false`, it only overrides
+     * matching members and keeps others, e.g. a cursor or starting page.
+     */
+    replacePage?: boolean;
+  }
+
+  /**
+   * Options for resolving the resources of a to-many {@link Relationship}
+   *
+   * [[include:guides/paging.md]]
+   */
+  export interface RelatedResourcesOptions extends RelatedDocumentOptions {
+    /** With `false`, a paged response (one with a `next` link) throws a {@link PagingNotAllowedError}. Default `true`. */
+    allowPaging?: boolean;
+    /** Follow the `next` links and return the resources of all pages. Defaults to `allowPaging`. */
+    followPaging?: boolean;
+  }
+
+  /** @hidden */
+  function hasRequestOptions(options: RelatedDocumentOptions): boolean {
+    return (
+      (options.sparseFields !== undefined && Object.keys(options.sparseFields).length > 0) ||
+      (options.sort !== undefined && options.sort.length > 0) ||
+      (options.page !== undefined && Object.keys(options.page).length > 0)
+    );
+  }
+
+  /** @hidden */
+  function validateRelatedOptions(options: RelatedDocumentOptions) {
+    if (options.sort !== undefined) {
+      if (!Array.isArray(options.sort) || options.sort.some((field) => field === '')) {
+        throw new TypeError('`sort` must be an array of non-empty strings');
+      }
+    }
+    if (options.page !== undefined) {
+      for (const member in options.page) {
+        const value = options.page[member];
+        // JavaScript callers can pass null or undefined despite the type
+        // tslint:disable-next-line:strict-type-predicates
+        if (value === null || value === undefined) {
+          throw new TypeError(`page member "${member}" must have a value`);
+        }
+      }
+    }
+  }
+
+  /**
+   * Resolves the default of `followPaging`, which is `allowPaging`
+   * @throws TypeError if `allowPaging: false` is combined with `followPaging: true`
+   * @hidden
+   */
+  function resolveFollowPaging(options: RelatedResourcesOptions): boolean {
+    const allowPaging = options.allowPaging !== false;
+    if (!allowPaging && options.followPaging === true) {
+      throw new TypeError('`allowPaging: false` cannot be combined with `followPaging: true`');
+    }
+    return options.followPaging === undefined ? allowPaging : options.followPaging;
+  }
+
+  /** @hidden */
+  function hasNextLink(document: Document): boolean {
+    const links = document.rawData.links;
+    return links !== undefined && links.next !== null && links.next !== undefined;
+  }
+
+  /** @hidden */
+  function isPagingLink(linkName: string): boolean {
+    return linkName === 'first' || linkName === 'last' || linkName === 'prev' || linkName === 'next';
+  }
 
   /**
    * This class represents a [JSON:API resource object](https://jsonapi.org/format/1.0/#document-resource-objects)
@@ -133,7 +396,7 @@ export namespace JsonApi {
       }
       const result: Links = {};
       for (const linkName in this.rawData.links) {
-        result[linkName] = new Link(this.rawData.links[linkName], this.document.url);
+        result[linkName] = new Link(this.rawData.links[linkName], this.document.effectiveURL);
       }
       return result;
     }
@@ -153,7 +416,7 @@ export namespace JsonApi {
       }
       const result: Links = {};
       for (const linkName in this.rawData.meta.links) {
-        result[linkName] = new Link(this.rawData.meta.links[linkName], this.document.url);
+        result[linkName] = new Link(this.rawData.meta.links[linkName], this.document.effectiveURL);
       }
       return result;
     }
@@ -422,15 +685,28 @@ export namespace JsonApi {
      * ```
      * [[include:guides/sparseFieldsets.md]]
      *
+     * [[include:guides/queryParams.md]]
+     *
+     * @param url The URL to fetch. It is not changed; the document gets a copy with the added query parameters.
      * @param context Context that will provide the JSON:API data, normally by fetching it from a server
-     * @param sparseFields Only these fields (per type) are requested from the server
+     * @param sparseFields Only these fields (per type) are requested from the server. They also apply to related documents.
+     * @param params Further query parameters for this request only, e.g. sorting, filtering or paging
      */
-    static async fromURL(url: URL, context: Context, sparseFields?: SparseFields): Promise<Document> {
+    static async fromURL(
+      url: URL,
+      context: Context,
+      sparseFields?: SparseFields,
+      params?: QueryParams,
+    ): Promise<Document> {
+      let requestURL = new URL(url.href);
       for (const resourceType in sparseFields) {
-        url.searchParams.append(`fields[${resourceType}]`, sparseFields[resourceType].join(','));
+        requestURL.searchParams.append(`fields[${resourceType}]`, sparseFields[resourceType].join(','));
       }
-      const rawData = await context.getDocument(url);
-      return new Document(rawData, context, url, sparseFields);
+      if (params) {
+        requestURL = params.applyTo(requestURL);
+      }
+      const fetched = await fetchDocument(context, requestURL);
+      return new Document(fetched.rawData, context, requestURL, sparseFields, fetched.url);
     }
 
     /**
@@ -439,15 +715,26 @@ export namespace JsonApi {
      * @param context The context to use to fetch related documents (not used during the initial construction)
      * @param url An optional URL can be provided to indicate where the raw data came from
      * @param sparseFields An object listing [sparse fieldsets](https://jsonapi.org/format/1.0/#fetching-sparse-fieldsets) for subsequent fetch operations
+     * @param responseURL The URL the raw data was received from if it differs from `url`, e.g. after redirects
      * @throws SchemaError when the given rawData does not look like a JSON:API document
      */
     constructor(
       readonly rawData: Spec.JsonApiDocument,
       private readonly context: Context,
       public readonly url?: URL,
-      public readonly sparseFields?: SparseFields
+      public readonly sparseFields?: SparseFields,
+      private readonly responseURL?: URL,
     ) {
       Spec.checkDocumentSchema(rawData);
+    }
+
+    /**
+     * The URL this document was received from, e.g. after redirects, if the context tells it
+     * ({@link Context.getDocumentWithURL}); otherwise {@link url}, the requested URL. Relative links of the document are
+     * resolved against it.
+     */
+    get effectiveURL(): URL | undefined {
+      return this.responseURL || this.url;
     }
 
     /**
@@ -620,6 +907,104 @@ export namespace JsonApi {
       }
       return res;
     }
+
+    /**
+     * Map of link names to {@link Link}s in the top level `links` member, e.g. the
+     * [pagination links](https://jsonapi.org/format/1.0/#fetching-pagination) `first`, `last`, `prev` and `next`.
+     * Links with the value `null` are left out.
+     * @memoized
+     */
+    @memoized()
+    get links(): Links {
+      const result: Links = {};
+      const rawLinks: { [linkName: string]: Spec.Link | null | undefined } = this.rawData.links || {};
+      for (const linkName in rawLinks) {
+        const rawLink = rawLinks[linkName];
+        if (rawLink !== null && rawLink !== undefined) {
+          result[linkName] = new Link(rawLink, this.effectiveURL);
+        }
+      }
+      return result;
+    }
+
+    /**
+     * The next page of this paged collection, `undefined` if there is no `next` link.
+     * The sparse fields of this document also apply to related documents of the page.
+     *
+     * [[include:guides/paging.md]]
+     * @memoized
+     */
+    @memoized()
+    async nextPage(): Promise<Document | undefined> {
+      return this.page('next');
+    }
+
+    /**
+     * The previous page of this paged collection, `undefined` if there is no `prev` link
+     * @memoized
+     */
+    @memoized()
+    async prevPage(): Promise<Document | undefined> {
+      return this.page('prev');
+    }
+
+    /**
+     * The first page of this paged collection, `undefined` if there is no `first` link
+     * @memoized
+     */
+    @memoized()
+    async firstPage(): Promise<Document | undefined> {
+      return this.page('first');
+    }
+
+    /**
+     * The last page of this paged collection, `undefined` if there is no `last` link
+     * @memoized
+     */
+    @memoized()
+    async lastPage(): Promise<Document | undefined> {
+      return this.page('last');
+    }
+
+    /**
+     * This document followed by all pages reached through `next` links
+     *
+     * [[include:guides/paging.md]]
+     */
+    async allPages(): Promise<Document[]> {
+      const pages: Document[] = [this];
+      let page = await this.nextPage();
+      while (page) {
+        pages.push(page);
+        page = await page.nextPage();
+      }
+      return pages;
+    }
+
+    /**
+     * The primary resources of this document and of all pages reached through `next` links, see {@link allPages}
+     * @throws {@link CardinalityError} if a page only contains a singular resource.
+     */
+    async allResources(): Promise<PrimaryResource[]> {
+      const resources: PrimaryResource[] = [];
+      for (const page of await this.allPages()) {
+        for (const resource of page.resources) {
+          resources.push(resource);
+        }
+      }
+      return resources;
+    }
+
+    /** @hidden */
+    private async page(linkName: string): Promise<Document | undefined> {
+      if (!(linkName in this.links)) {
+        return undefined;
+      }
+      // The link already contains the query parameters of the page, including the sparse fields
+      const url = new URL(this.links[linkName].url.href);
+      const fetched = await fetchDocument(this.context, url);
+      return new Document(fetched.rawData, this.context, url, this.sparseFields, fetched.url);
+    }
   }
 
   /** Collection of {@link RelatedResource}s included in a compound document, organized by type and id */
@@ -749,23 +1134,14 @@ export namespace JsonApi {
 
     /**
      * @param rawData Can be a string containing an href or a {@link Spec.LinkObject}
-     * @param referringDocumentURL The _origin_ part of this URL will be used as prefix if `rawData` only refers to a
-     * pathname and not a full URL
+     * @param referringDocumentURL A relative href (e.g. `/articles/1`, `comments` or `?page[number]=2`) is resolved
+     * against this URL as described in [RFC 3986](https://www.rfc-editor.org/rfc/rfc3986.html#section-5), normally
+     * the {@link Document.effectiveURL} of the document that contains the link
      */
     constructor(rawData: Spec.Link, referringDocumentURL?: URL) {
-      const origin = referringDocumentURL ? referringDocumentURL.origin : '';
-      if (typeof rawData === 'string') {
-        try {
-          this.url = new URL(rawData);
-        } catch (e) {
-          this.url = new URL(origin + rawData);
-        }
-      } else {
-        try {
-          this.url = new URL(rawData.href);
-        } catch (e) {
-          this.url = new URL(origin + rawData.href);
-        }
+      const href = typeof rawData === 'string' ? rawData : rawData.href;
+      this.url = referringDocumentURL ? new URL(href, referringDocumentURL.href) : new URL(href);
+      if (typeof rawData !== 'string') {
         this.meta = rawData.meta;
       }
     }
@@ -821,8 +1197,12 @@ export namespace JsonApi {
         return undefined;
       }
       const result: Links = {};
-      for (const linkName in this.rawData.links) {
-        result[linkName] = new Link(this.rawData.links[linkName], this.referringDocument.url);
+      const rawLinks: { [linkName: string]: Spec.Link | null | undefined } = this.rawData.links;
+      for (const linkName in rawLinks) {
+        const rawLink = rawLinks[linkName];
+        if (rawLink !== null && rawLink !== undefined) {
+          result[linkName] = new Link(rawLink, this.referringDocument.effectiveURL);
+        }
       }
       return result;
     }
@@ -836,30 +1216,181 @@ export namespace JsonApi {
       return this.rawData.data;
     }
 
+    /** @hidden */
+    private cachedRelatedDocument?: Promise<Document | undefined>;
+    /** @hidden */
+    private cachedResources?: Promise<Resource[]>;
+    /** @hidden */
+    private cachedResourcesFromRelatedLink?: Promise<Resource[]>;
+
     /**
      * The {@link Document} referred to by the `related` link in the `links` member of the relationship.
      * Fetches the related document from the server using the context given at construction and respecting any
      * sparseFields of the referring document.
-     * @memoized
+     *
+     * `options` can request sparse fields, sorting and a page for this request. Only the requested page is fetched;
+     * use {@link Document.nextPage} or {@link resources} for the following pages. Query parameters of the link are kept
+     * unless overridden. Which sort fields and page members a server supports depends on the server.
+     *
+     * [[include:guides/paging.md]]
+     *
+     * @returns `undefined` if there is no `related` link
+     * @throws TypeError if `sort` is not an array of non-empty strings or a `page` member has no value
+     * @remarks The result is memoized if no `sparseFields`, `sort` or `page` options are given.
      */
-    @memoized()
-    async relatedDocument(): Promise<Document | undefined> {
-      if (this.links && 'related' in this.links) {
-        return Document.fromURL(this.links['related'].url, this.context, this.referringDocument.sparseFields);
+    async relatedDocument(options: RelatedDocumentOptions = {}): Promise<Document | undefined> {
+      validateRelatedOptions(options);
+      if (hasRequestOptions(options)) {
+        return this.fetchRelatedDocument(options);
       }
+      if (this.cachedRelatedDocument === undefined) {
+        this.cachedRelatedDocument = this.fetchRelatedDocument(options);
+      }
+      return this.cachedRelatedDocument;
+    }
+
+    /** @hidden */
+    private async fetchRelatedDocument(options: RelatedDocumentOptions): Promise<Document | undefined> {
+      if (!this.links || !('related' in this.links)) {
+        return undefined;
+      }
+      const inherited = this.referringDocument.sparseFields;
+      const sparseFields = options.sparseFields ? { ...inherited, ...options.sparseFields } : inherited;
+      const params = new QueryParams();
+      if (options.sort && options.sort.length > 0) {
+        params.sort(options.sort);
+      }
+      const page = options.page || {};
+      for (const member in page) {
+        params.page(member, page[member]);
+      }
+      // The request keeps the query of the link (e.g. filters set by the server) except for the parameters it sets
+      const overridden = new Set(params.entries().map(([key]) => key));
+      for (const resourceType in sparseFields) {
+        overridden.add(`fields[${resourceType}]`);
+      }
+      const replacePage = options.replacePage !== false && Object.keys(page).length > 0;
+      const url = new URL(this.links['related'].url.href);
+      const linkKeys: string[] = [];
+      url.searchParams.forEach((value, key) => linkKeys.push(key));
+      for (const key of linkKeys) {
+        if (overridden.has(key) || (replacePage && (key === 'page' || key.startsWith('page[')))) {
+          url.searchParams.delete(key);
+        }
+      }
+      return Document.fromURL(url, this.context, sparseFields, params);
     }
 
     /**
      * List of {@link Resource}s referenced by this relationship (if there are many resources).
      * Resource linkage (resource identifiers found in the `data` member of this relationship) has priority.
-     * If there is no resource linkage, the primary resources found in {@link relatedDocument} are used.
+     * If there is no resource linkage, the primary resources found in {@link relatedDocument} are used,
+     * including those of all following pages.
+     *
+     * Linkage keeps the server's order and has no pages, so `sort` or `page` options always use the `related` link.
+     * Linkage with pagination links in the relationship is not used either, since it may be incomplete.
+     * With a `sparseFields` option, linkage is only used if the included resources contain all requested fields of
+     * their type (an empty list only needs the identifier); documents fetched from these resources then use the
+     * requested fields. Otherwise the `related` link is used.
+     *
+     * By default, the `next` links of the related document are followed until the last page. With
+     * `followPaging: false`, only the requested page is returned. With `allowPaging: false`, a paged response
+     * throws a {@link PagingNotAllowedError}.
+     *
+     * [[include:guides/paging.md]]
+     *
      * @throws {@link CardinalityError} if there is only a singular resource.
-     * @throws SchemaError if neither a `links` nor a `data` member is present
-     * @memoized
+     * @throws {@link PagingNotAllowedError} if the response is paged and `allowPaging` is `false`.
+     * @throws SchemaError if neither a `links` nor a `data` member is present, or if `sort` or `page` is given without a `related` link
+     * @throws TypeError if `allowPaging: false` is combined with `followPaging: true`, `sort` is not an array of
+     * non-empty strings or a `page` member has no value
+     * @remarks The result is memoized if no options are given.
      */
-    @memoized()
-    async resources(): Promise<Resource[]> {
-      if ('data' in this.rawData) {
+    async resources(options: RelatedResourcesOptions = {}): Promise<Resource[]> {
+      validateRelatedOptions(options);
+      resolveFollowPaging(options);
+      if (Object.keys(options).length > 0) {
+        return this.resolveResources(options);
+      }
+      if (this.cachedResources === undefined) {
+        this.cachedResources = this.resolveResources(options);
+      }
+      return this.cachedResources;
+    }
+
+    /** @hidden */
+    private get linkageIsPaged(): boolean {
+      const links: { [linkName: string]: Spec.Link | null | undefined } = this.rawData.links || {};
+      return Object.keys(links).some(
+        (name) => isPagingLink(name) && links[name] !== null && links[name] !== undefined,
+      );
+    }
+
+    /** @hidden */
+    private async resourcesOfRelatedDocument(options: RelatedResourcesOptions): Promise<Resource[] | undefined> {
+      const allowPaging = options.allowPaging !== false;
+      const followPaging = resolveFollowPaging(options);
+      let page = await this.relatedDocument({
+        sparseFields: options.sparseFields,
+        sort: options.sort,
+        page: options.page,
+        replacePage: options.replacePage,
+      });
+      if (!page) {
+        return undefined;
+      }
+      if (hasNextLink(page) && !allowPaging) {
+        throw new PagingNotAllowedError('The related document is paged, but `allowPaging` is `false`');
+      }
+      if (!followPaging || !hasNextLink(page)) {
+        return page.resources;
+      }
+      const resources: Resource[] = [];
+      while (page) {
+        for (const resource of page.resources) {
+          resources.push(resource);
+        }
+        page = hasNextLink(page) ? await page.nextPage() : undefined;
+      }
+      return resources;
+    }
+
+    /**
+     * `true` if the referring document contains every linked resource with all fields requested for its type.
+     * An empty field list only needs the resource identifier, like in grivetpy.
+     * @hidden
+     */
+    private linkageProvidesFields(
+      resourceIdentifiers: Spec.ResourceIdentifierObject[],
+      sparseFields: SparseFields,
+    ): boolean {
+      return resourceIdentifiers.every((rid) => {
+        if (!(rid.type in sparseFields) || sparseFields[rid.type].length === 0) {
+          return true;
+        }
+        const fieldNames = sparseFields[rid.type];
+        const resourceObjects = this.referringDocument.findResourceObjects(rid.id, rid.type);
+        if (resourceObjects.length !== 1) {
+          return false;
+        }
+        const { attributes = {}, relationships = {} } = resourceObjects[0];
+        return fieldNames.every((name) => name in attributes || name in relationships);
+      });
+    }
+
+    /** @hidden */
+    private async resolveResources(options: RelatedResourcesOptions): Promise<Resource[]> {
+      const sortOrPage =
+        (options.sort !== undefined && options.sort.length > 0) ||
+        (options.page !== undefined && Object.keys(options.page).length > 0);
+      if (sortOrPage) {
+        const sorted = await this.resourcesOfRelatedDocument(options);
+        if (sorted) {
+          return sorted;
+        }
+        throw new SchemaError('`sort` and `page` require a `links.related` member in the relationship');
+      }
+      if ('data' in this.rawData && !this.linkageIsPaged) {
         const resourceIdentifiers = this.data;
         if (resourceIdentifiers !== null && resourceIdentifiers !== undefined) {
           if (!Array.isArray(resourceIdentifiers)) {
@@ -867,16 +1398,37 @@ export namespace JsonApi {
               'Relationship does not contain an array of resources. Use the `resource` method instead.'
             );
           }
-          return Promise.resolve(
-            resourceIdentifiers.map(
-              (rid) => new RelatedResource(this.referringDocument, rid.id, rid.type, this.context)
-            )
+          const sparseFields = options.sparseFields;
+          if (sparseFields === undefined || Object.keys(sparseFields).length === 0) {
+            return Promise.resolve(
+              resourceIdentifiers.map(
+                (rid) => new RelatedResource(this.referringDocument, rid.id, rid.type, this.context)
+              )
+            );
+          }
+          if (this.linkageProvidesFields(resourceIdentifiers, sparseFields)) {
+            // The resources come from the referring document, but documents fetched from them use the requested fields
+            const view = new Document(
+              this.referringDocument.rawData,
+              this.context,
+              this.referringDocument.url,
+              { ...this.referringDocument.sparseFields, ...sparseFields },
+              this.referringDocument.effectiveURL,
+            );
+            return resourceIdentifiers.map((rid) => new RelatedResource(view, rid.id, rid.type, this.context));
+          }
+          const fetched = await this.resourcesOfRelatedDocument(options);
+          if (fetched) {
+            return fetched;
+          }
+          throw new SchemaError(
+            'The included resources lack requested sparse fields and the relationship has no `links.related` member'
           );
         }
       }
-      const relatedDoc = await this.relatedDocument();
-      if (relatedDoc) {
-        return relatedDoc.resources;
+      const related = await this.resourcesOfRelatedDocument(options);
+      if (related) {
+        return related;
       }
       throw new SchemaError(
         'A relationship object relating to a resource must contain a `links.related` or `data` member'
@@ -927,19 +1479,37 @@ export namespace JsonApi {
     /**
      * Works like the {@link resources} method, but prefers the `related` link instead of resource linkage.
      * If no `related` link is present or if the link does not work, it falls back to the {@link resources} method.
+     * The options and the paging behavior are the same as for {@link resources}.
      * @throws {@link CardinalityError} if there is only a singular resource.
+     * @throws {@link PagingNotAllowedError} if the response is paged and `allowPaging` is `false` (without falling back).
      * @throws SchemaError if neither a `links` nor a `data` member is present
-     * @memoized
+     * @remarks The result is memoized if no options are given.
      */
-    @memoized()
-    async resourcesFromRelatedLink(): Promise<Resource[]> {
+    async resourcesFromRelatedLink(options: RelatedResourcesOptions = {}): Promise<Resource[]> {
+      validateRelatedOptions(options);
+      resolveFollowPaging(options);
+      if (Object.keys(options).length > 0) {
+        return this.resolveResourcesFromRelatedLink(options);
+      }
+      if (this.cachedResourcesFromRelatedLink === undefined) {
+        this.cachedResourcesFromRelatedLink = this.resolveResourcesFromRelatedLink(options);
+      }
+      return this.cachedResourcesFromRelatedLink;
+    }
+
+    /** @hidden */
+    private async resolveResourcesFromRelatedLink(options: RelatedResourcesOptions): Promise<Resource[]> {
       try {
-        const relatedDoc = await this.relatedDocument();
-        if (relatedDoc) {
-          return relatedDoc.resources;
+        const related = await this.resourcesOfRelatedDocument(options);
+        if (related) {
+          return related;
         }
-      } catch (err) {}
-      return this.resources();
+      } catch (err) {
+        if (err instanceof PagingNotAllowedError) {
+          throw err;
+        }
+      }
+      return this.resources(options);
     }
 
     /**
