@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [v0.2.0](https://github.com/muellerbbm-vas/grivet/compare/v0.1.0...v0.2.0) - 2026-11-09
+
+This release includes [PR #524](https://github.com/muellerbbm-vas/grivet/pull/524) and the fixes for development dependencies.
+
 ### Added
 
 - `QueryParams` builds query parameters (`include`, `fields`, `sort`, `filter`, `page` and custom ones). `Document.fromURL`
