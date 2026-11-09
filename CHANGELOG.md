@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Use Jest 29 for tests and Node.js 22 and 24 in CI.
 - `Relationship.resources()`, `resourcesFromRelatedLink()` and the `relatedResources` accessor follow the `next` links of a
   paged related document and return the resources of all pages. Before, only the first page was returned. Use
   `resources({ followPaging: false })` for the first page only.
@@ -34,6 +35,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Relative links are resolved against the full document URL (`Document.effectiveURL`) as described in RFC 3986. Before,
   only the origin was prepended, which broke query-relative (`?page[number]=2`) and path-relative (`comments`) links.
   Absolute and root-relative links are resolved as before.
+
+### Security
+
+- Update development dependencies to address all 23 existing Dependabot alerts.
+- Two additional advisories still affect development dependencies:
+  - Jest depends on `deepmerge`, which is affected by [GHSA-gcqx-w48m-w2h4](https://github.com/advisories/GHSA-gcqx-w48m-w2h4).
+    No patched release is available.
+  - TypeDoc depends on `minimatch` 9, which is affected by [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+    The patched version 11 removes an API that TypeDoc needs and breaks documentation generation.
 
 ## [v0.1.0](https://github.com/muellerbbm-vas/grivet/compare/v0.0.9...v0.1.0) - 2026-10-22
 
