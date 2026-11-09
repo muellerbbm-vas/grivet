@@ -11,6 +11,7 @@ A [JSON:API](https://jsonapi.org) client library written in Typescript with emph
 - Adaptable to various HTTP client implementations
 - Focus on traversing JSON:API resources without knowing specific URLs, as recommended by REST/HATEOAS
 - Support for sparse fieldsets
+- Support for sorting, filtering and paging, including the pages of related collections
 - Uses memoization to avoid repeated network requests and repeated traversals of the document structure
 - No dependencies (apart from `jest` for testing)
 - Implemented against the JSON:API 1.0 specification.
@@ -117,6 +118,8 @@ The attributes of the _author_ resource can then simply be obtained using its `a
 
 - [Implementing the `Context` interface](./guides/context.md)
 - [Using Sparse Fieldsets](./guides/sparseFieldsets.md)
+- [Sorting, filtering and other query parameters](./guides/queryParams.md)
+- [Paging](./guides/paging.md)
 - [Experimental: constructing a document for POSTing to a server](./guides/clientDocument.md)
 
 ## Examples
@@ -143,9 +146,6 @@ Have a look at the [library reference](https://muellerbbm-vas.github.io/grivet/d
 ## TODO
 
 - [`self` links in relationships](https://jsonapi.org/format/1.0/#fetching-relationships) ([#20](https://github.com/muellerbbm-vas/grivet/issues/20))
-- [Sorting](https://jsonapi.org/format/1.0/#fetching-sorting)
-- [Pagination](https://jsonapi.org/format/1.0/#fetching-pagination)
-- [Filtering](https://jsonapi.org/format/1.0/#fetching-filtering)
 
 ## License
 
